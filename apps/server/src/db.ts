@@ -22,4 +22,4 @@ export const blobs = sqliteTable("blobs", {
 
 const sqlite = new Database("sync.db");
 sqlite.pragma("journal_mode = WAL");
-export const db = drizzle(sqlite);
+export const db = drizzle(sqlite, { schema: { changes, blobs } });
