@@ -6,13 +6,13 @@ import { generateId } from "../schema";
 import { entries, entryActivities } from "../schema";
 
 export class ImportRepository extends BaseRepository {
-  async bulkImportDaylio(data: ParsedImportData): Promise<number> {
+  async bulkImportLegacy(data: ParsedImportData): Promise<number> {
     const taxRepo = new TaxonomyRepository({ ...this.db } as any);
     let count = 0;
 
     await this.db.transaction(async (tx) => {
       // 1. Resolve Moods
-      // We will map Daylio moods by name. If missing, create under a generic group.
+      // We will map legacy moods by name. If missing, create under a generic group.
       const existingMoods = await taxRepo.getMoodsWithGroups();
       const moodMap = new Map<string, string>(); // name -> id
       existingMoods.forEach(m => moodMap.set(m.name.toLowerCase(), m.id));

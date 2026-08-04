@@ -270,8 +270,8 @@ export function TaxonomySettings() {
           
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: "1rem", borderTop: "1px solid var(--color-surface-2)" }}>
             <div>
-              <div style={{ fontWeight: "600", color: "var(--color-ink-1)" }}>Import from Daylio</div>
-              <div style={{ fontSize: "var(--font-size-sm)", color: "var(--color-ink-3)" }}>Select a Daylio CSV export file</div>
+              <div style={{ fontWeight: "600", color: "var(--color-ink-1)" }}>Import from Legacy App</div>
+              <div style={{ fontSize: "var(--font-size-sm)", color: "var(--color-ink-3)" }}>Select a CSV export file</div>
             </div>
             <label style={{ padding: "0.5rem 1rem", borderRadius: "var(--radius-full)", background: "var(--color-surface-2)", cursor: "pointer", fontWeight: "500" }}>
               Import
@@ -284,17 +284,17 @@ export function TaxonomySettings() {
                   if (!file) return;
                   
                   const text = await file.text();
-                  const { parseDaylioCsv, previewImport } = await import("@chapter/core");
+                  const { parseLegacyCsv, previewImport } = await import("@chapter/core");
                   try {
-                    const parsed = parseDaylioCsv(text);
+                    const parsed = parseLegacyCsv(text);
                     const preview = previewImport(parsed);
                     if (confirm(`Import preview:\n\n${preview}\n\nProceed?`)) {
                       const { openWebDatabase } = await import("@chapter/db/drivers/web");
                       const { ImportRepository } = await import("@chapter/db");
                       const { db } = await openWebDatabase();
                       const importRepo = new ImportRepository({ ...db, transaction: db.transaction } as any);
-                      const count = await importRepo.bulkImportDaylio(parsed);
-                      alert(`Successfully imported ${count} entries!`);
+                      const count = await importRepo.bulkImportLegacy(parsed);
+                      alert(`Imported ${count} entries successfully!`);
                       window.location.reload();
                     }
                   } catch (err: any) {

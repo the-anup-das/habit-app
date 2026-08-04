@@ -10,7 +10,7 @@ export interface ParsedImportData {
   uniqueActivities: string[];
 }
 
-export function parseDaylioCsv(csvString: string): ParsedImportData {
+export function parseLegacyCsv(csvString: string): ParsedImportData {
   const lines = csvString.split(/\r?\n/).filter(line => line.trim() !== "");
   if (lines.length < 2) throw new Error("CSV has no data");
 
@@ -48,7 +48,7 @@ export function parseDaylioCsv(csvString: string): ParsedImportData {
   const colNote = headers.indexOf("note");
 
   if (colDate === -1 || colTime === -1 || colMood === -1) {
-    throw new Error("Invalid Daylio CSV format. Missing required columns.");
+    throw new Error("Invalid Legacy CSV format. Missing required columns.");
   }
 
   const entries: ParsedImportData["entries"] = [];

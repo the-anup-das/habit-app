@@ -304,15 +304,15 @@ export default function TaxonomySettings() {
 
         <View style={[styles.cardItem, { borderTopWidth: 1, borderTopColor: COLORS.light.surface2 }]}>
           <View>
-            <Text style={styles.cardItemTitle}>Import from Daylio</Text>
-            <Text style={styles.cardItemDesc}>Select a Daylio CSV export file</Text>
+            <Text style={styles.cardItemTitle}>Import from Legacy App</Text>
+            <Text style={styles.cardItemDesc}>Select a CSV export file</Text>
           </View>
           <TouchableOpacity 
             style={styles.addButton}
             onPress={async () => {
               const DocumentPicker = await import("expo-document-picker");
               const FileSystem = await import("expo-file-system");
-              const { parseDaylioCsv, previewImport } = await import("@chapter/core");
+              const { parseLegacyCsv, previewImport } = await import("@chapter/core");
               
               try {
                 const result = await DocumentPicker.getDocumentAsync({ type: ["text/csv", "text/comma-separated-values"], copyToCacheDirectory: true });
@@ -321,7 +321,7 @@ export default function TaxonomySettings() {
                 const fileUri = result.assets[0].uri;
                 const text = await FileSystem.readAsStringAsync(fileUri, { encoding: FileSystem.EncodingType.UTF8 });
                 
-                const parsed = parseDaylioCsv(text);
+                const parsed = parseLegacyCsv(text);
                 const preview = previewImport(parsed);
                 
                 Alert.alert(
@@ -334,8 +334,8 @@ export default function TaxonomySettings() {
                       const { ImportRepository } = await import("@chapter/db");
                       const { db } = await openNativeDatabase();
                       const importRepo = new ImportRepository({ ...db, transaction: db.transaction } as any);
-                      const count = await importRepo.bulkImportDaylio(parsed);
-                      Alert.alert("Success", `Successfully imported ${count} entries!`);
+                      const count = await importRepo.bulkImportLegacy(parsed);
+                      Alert.alert("Success", `Imported ${count} entries!`);
                       loadData();
                     }}
                   ]
