@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  web:
+    image: ghcr.io/username/habit-app-web:latest # Replace 'username' with your actual GitHub username
+    container_name: habit-app-web
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production

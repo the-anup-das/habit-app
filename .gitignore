@@ -1,0 +1,35 @@
+node_modules/
+dist/
+build/
+coverage/
+.turbo/
+*.tsbuildinfo
+
+# Expo / React Native
+.expo/
+apps/mobile/android/
+apps/mobile/ios/
+*.keystore
+!debug.keystore
+
+# Vite
+apps/web/dist/
+apps/web/dev-dist/
+
+# Local env — never commit. This app has no server secrets by design,
+# but sync (Phase 4) will have some.
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Local Claude settings (machine-specific permissions)
+.claude/settings.local.json

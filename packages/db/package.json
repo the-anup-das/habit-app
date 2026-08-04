@@ -1,0 +1,26 @@
+{
+  "name": "@chapter/db",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Drizzle schema, migrations, repositories. One schema, two drivers.",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./drivers/web": "./src/drivers/web.ts",
+    "./drivers/native": "./src/drivers/native.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@sqlite.org/sqlite-wasm": "3.53.0-build1",
+    "drizzle-orm": "^0.45.2",
+    "expo-sqlite": "~15.0.0"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.10"
+  }
+}
