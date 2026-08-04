@@ -20,9 +20,6 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Enable Corepack
-        run: corepack enable
-
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
@@ -32,12 +29,17 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      # Use npm instead of pnpm for Android builds.
+      # React Native's Gradle toolchain requires a flat node_modules
+      # layout without symlinks. pnpm's .pnpm virtual store breaks
+      # Gradle plugin resolution (expo-module-gradle-plugin, etc.)
+      # even with node-linker=hoisted.
+      - name: Install dependencies (npm for flat node_modules)
+        run: npm install --legacy-peer-deps
 
       - name: Prebuild Android project
         working-directory: apps/mobile
-        run: pnpm exec expo prebuild --platform android --clean
+        run: npx expo prebuild --platform android --clean
 
       - name: Build APK
         working-directory: apps/mobile/android
