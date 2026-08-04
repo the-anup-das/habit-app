@@ -13,6 +13,9 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml turbo.json ./
 COPY packages ./packages
 COPY apps/web ./apps/web
 
+# Install build dependencies for native modules (e.g. better-sqlite3)
+RUN apk add --no-cache python3 make g++
+
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
