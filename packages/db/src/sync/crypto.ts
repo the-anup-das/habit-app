@@ -25,19 +25,16 @@ export async function deriveRowKey(
   context: string = "rows",
 ): Promise<Uint8Array> {
   await initCrypto();
-  // Using crypto_kdf to derive subkeys. Context must be 8 bytes.
-  let ctx = new TextEncoder().encode(context);
-  if (ctx.length < 8) {
-    const padded = new Uint8Array(8);
-    padded.set(ctx);
-    ctx = padded;
-  } else if (ctx.length > 8) {
-    ctx = ctx.slice(0, 8);
+  let ctxStr = context;
+  if (ctxStr.length < 8) {
+    ctxStr = ctxStr.padEnd(8, "\0");
+  } else if (ctxStr.length > 8) {
+    ctxStr = ctxStr.slice(0, 8);
   }
 
   // Need to use a key derived from masterKey using a generic hash to ensure correct length for crypto_kdf (usually 32 bytes)
-  const masterKeyKDF = _sodium.crypto_generichash(32, masterKey);
-  return _sodium.crypto_kdf_derive_from_key(32, 1, ctx, masterKeyKDF);
+  const masterKeyKDF = _sodium.crypto_generichash(32, masterKey, new Uint8Array());
+  return _sodium.crypto_kdf_derive_from_key(32, 1, ctxStr, masterKeyKDF);
 }
 
 export async function deriveFileKey(
@@ -45,17 +42,15 @@ export async function deriveFileKey(
   context: string = "files",
 ): Promise<Uint8Array> {
   await initCrypto();
-  let ctx = new TextEncoder().encode(context);
-  if (ctx.length < 8) {
-    const padded = new Uint8Array(8);
-    padded.set(ctx);
-    ctx = padded;
-  } else if (ctx.length > 8) {
-    ctx = ctx.slice(0, 8);
+  let ctxStr = context;
+  if (ctxStr.length < 8) {
+    ctxStr = ctxStr.padEnd(8, "\0");
+  } else if (ctxStr.length > 8) {
+    ctxStr = ctxStr.slice(0, 8);
   }
 
-  const masterKeyKDF = _sodium.crypto_generichash(32, masterKey);
-  return _sodium.crypto_kdf_derive_from_key(32, 2, ctx, masterKeyKDF);
+  const masterKeyKDF = _sodium.crypto_generichash(32, masterKey, new Uint8Array());
+  return _sodium.crypto_kdf_derive_from_key(32, 2, ctxStr, masterKeyKDF);
 }
 
 export async function encryptXChaCha20Poly1305(

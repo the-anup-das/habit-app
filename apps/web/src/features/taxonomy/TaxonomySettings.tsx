@@ -441,7 +441,7 @@ export function TaxonomySettings() {
             </div>
             <button
               onClick={async () => {
-                const { generateCsvExport, PopulatedEntry } = await import("@chapter/core");
+                const { generateCsvExport } = await import("@chapter/core");
                 const { openWebDatabase } = await import("@chapter/db/drivers/web");
                 const { EntriesRepository } = await import("@chapter/db");
 
@@ -456,7 +456,7 @@ export function TaxonomySettings() {
                   transaction: db.transaction,
                 } as any);
                 const entries = await entriesRepo.getEntriesForPeriod();
-                const csv = generateCsvExport(entries as PopulatedEntry[]);
+                const csv = generateCsvExport(entries as any);
 
                 const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
                 const url = URL.createObjectURL(blob);
@@ -506,6 +506,7 @@ export function TaxonomySettings() {
               }}
             >
               Import
+              <div>Use "Settings {">"} Sync" to verify ops logs.</div>
               <input
                 type="file"
                 accept=".csv"

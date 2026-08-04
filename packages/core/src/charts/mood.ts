@@ -40,7 +40,10 @@ export function generateMoodChartGeometry(
     return new Date(y, m, d);
   };
 
-  const xDomain = [parseDate(points[0].localDate), parseDate(points[points.length - 1].localDate)];
+  const xDomain = [
+    parseDate(points[0]!.localDate),
+    parseDate(points[points.length - 1]!.localDate),
+  ];
 
   const xScale = d3Scale.scaleTime().domain(xDomain).range([0, width]);
 
@@ -55,7 +58,7 @@ export function generateMoodChartGeometry(
     .defined((d, i, data) => {
       // Line is broken if the gap between this point and the previous point is > 1 day
       if (i === 0) return true;
-      const prevDate = parseDate(data[i - 1].localDate);
+      const prevDate = parseDate(data[i - 1]!.localDate);
       const currDate = parseDate(d.localDate);
       const diffDays = (currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24);
       return Math.round(diffDays) === 1; // Only defined if it's the very next day

@@ -5,7 +5,6 @@ export * from "./stats/basic";
 export * from "./stats/correlation";
 export * from "./stats/goals";
 export * from "./storage";
-export * from "./storage/web";
 export * from "./usecases/capture";
 export * from "./usecases/export";
 export * from "./usecases/habit_engine";

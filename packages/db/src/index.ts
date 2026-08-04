@@ -8,7 +8,6 @@
 export { and, asc, count, desc, eq, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
 export { type MigrationResult, type MigrationRunner, runMigrations } from "./migrate";
 export { MIGRATIONS } from "./migrations";
-export * from "./repositories/base";
 export * from "./repositories/entries";
 export { GoalsRepository } from "./repositories/goals";
 export * from "./repositories/import";

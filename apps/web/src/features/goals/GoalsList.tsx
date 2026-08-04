@@ -1,23 +1,24 @@
-import { getToday, HabitEngine } from "@chapter/core";
+import { getLocalDate, HabitEngine } from "@chapter/core";
 import { GoalsRepository, SyncQueue } from "@chapter/db";
 import { openWebDatabase } from "@chapter/db/drivers/web";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { systemClock } from "../../lib/clock";
 import { CreateGoalDialog } from "./CreateGoalDialog";
 
 const syncQueue = new SyncQueue();
 
 export function GoalsList() {
-  const [goals, setGoals] = useState<(GoalData & { progress: any })[]>([]);
+  const [goals, setGoals] = useState<(any & { progress: any })[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
 
   const loadData = async () => {
     const { db } = await openWebDatabase();
-    const _goalsRepo = new GoalsRepository(db, syncQueue.enqueue.bind(syncQueue));
+    new GoalsRepository(db, syncQueue.enqueue.bind(syncQueue));
 
     const habitEngine = new HabitEngine(db);
-    const today = getToday();
+    const today = getLocalDate(systemClock);
     const withProgress = await habitEngine.getDailyProgress(today);
 
     // Calculate strength score mock (real impl requires fetching all completions over 30 days)
@@ -217,7 +218,7 @@ export function GoalsList() {
                     onClick={async () => {
                       const { db } = await openWebDatabase();
                       const goalsRepo = new GoalsRepository(db, syncQueue.enqueue.bind(syncQueue));
-                      await goalsRepo.checkInGoal(goal.id, getToday());
+                      await goalsRepo.checkInGoal(goal.id, getLocalDate(systemClock));
                       loadData();
                     }}
                     disabled={completed}

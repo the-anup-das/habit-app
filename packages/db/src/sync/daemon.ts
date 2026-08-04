@@ -1,6 +1,6 @@
-import { syncOps, syncState } from "@chapter/db/schema";
-import { decryptXChaCha20Poly1305 } from "./crypto.js";
-import { getDeviceId, getMasterKey } from "./keystore.js";
+import { entries, syncOps, syncState } from "../schema";
+import { decryptXChaCha20Poly1305, deriveRowKey } from "./crypto";
+import { getDeviceId, getMasterKey } from "./keystore";
 
 // Hardcoded for development. In prod, this would be an env var.
 const SERVER_URL = "http://localhost:3000";
@@ -28,7 +28,7 @@ export class SyncDaemon {
       let payloadStr = "";
       if (typeof op.payload === "string") {
         payloadStr = op.payload;
-      } else if (op.payload instanceof Uint8Array || Buffer.isBuffer(op.payload)) {
+      } else if (op.payload instanceof Uint8Array) {
         payloadStr = new TextDecoder().decode(op.payload);
       }
 
@@ -93,9 +93,6 @@ export class SyncDaemon {
       const deviceId = getDeviceId();
       const masterKey = await getMasterKey();
 
-      // Need deriveRowKey from crypto, so we need to import it.
-      // But we can do that lazily or import at top. Let's import at top.
-      const { deriveRowKey } = await import("./crypto.js");
       const rowKeyBytes = await deriveRowKey(masterKey, "rows");
 
       await this.db.transaction(async (tx: any) => {
@@ -146,10 +143,7 @@ export class SyncDaemon {
     if (rowKey.startsWith("entries:")) {
       // Check LWW conflict logic
       const entryId = rowKey.replace("entries:", "");
-      const existingEntries = await tx
-        .select()
-        .from((await import("@chapter/db")).entries)
-        .where({ id: entryId });
+      const existingEntries = await tx.select().from(entries).where({ id: entryId });
       const existingEntry = existingEntries.length > 0 ? existingEntries[0] : null;
 
       if (existingEntry) {

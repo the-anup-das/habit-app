@@ -1,6 +1,6 @@
+import type { StorageProvider } from "@chapter/core";
 import * as Crypto from "expo-crypto";
 import * as FileSystem from "expo-file-system";
-import type { StorageProvider } from "./index";
 
 export class NativeStorageProvider implements StorageProvider {
   async saveMedia(uri: string, kind: "photo" | "audio", ext: string): Promise<string> {

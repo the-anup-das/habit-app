@@ -1,4 +1,4 @@
-import { asc, eq } from "drizzle-orm";
+import { asc, eq, isNull, sql } from "drizzle-orm";
 import * as schema from "../schema";
 
 // We don't want to tie repositories to a specific driver (WebDatabase or NativeDatabase),
@@ -28,7 +28,7 @@ export class TaxonomyRepository {
       orderBy: [asc(schema.moodGroups.id)],
       with: {
         moods: {
-          where: eq(schema.moods.isArchived, false),
+          where: isNull(schema.moods.archivedAt),
           orderBy: [asc(schema.moods.position)],
         },
       },
@@ -39,18 +39,18 @@ export class TaxonomyRepository {
     // Activities can be grouped or ungrouped.
     // Let's get all activity groups and their activities, and also ungrouped activities.
     const groups = await this.db.query.activityGroups.findMany({
-      where: eq(schema.activityGroups.isArchived, false),
+      where: isNull(schema.activityGroups.archivedAt),
       orderBy: [asc(schema.activityGroups.position)],
       with: {
         activities: {
-          where: eq(schema.activities.isArchived, false),
+          where: isNull(schema.activities.archivedAt),
           orderBy: [asc(schema.activities.position)],
         },
       },
     });
 
     const ungroupedActivities = await this.db.query.activities.findMany({
-      where: (t: any, { and, isNull, eq }: any) => and(isNull(t.groupId), eq(t.isArchived, false)),
+      where: (t: any, { and, isNull }: any) => and(isNull(t.groupId), isNull(t.archivedAt)),
       orderBy: [asc(schema.activities.position)],
     });
 
@@ -65,7 +65,7 @@ export class TaxonomyRepository {
       groupId: params.groupId,
       name: params.name,
       position: params.position ?? 999,
-      isArchived: false,
+
       createdAt: now,
       updatedAt: now,
       rev: 1,
@@ -96,7 +96,6 @@ export class TaxonomyRepository {
     await this.db
       .update(schema.moods)
       .set({
-        isArchived: true,
         archivedAt: now,
         updatedAt: now,
         rev: sql`${schema.moods.rev} + 1`,
@@ -112,7 +111,7 @@ export class TaxonomyRepository {
       groupId: params.groupId ?? null,
       name: params.name,
       position: params.position ?? 999,
-      isArchived: false,
+
       createdAt: now,
       updatedAt: now,
       rev: 1,
@@ -146,7 +145,6 @@ export class TaxonomyRepository {
     await this.db
       .update(schema.activities)
       .set({
-        isArchived: true,
         archivedAt: now,
         updatedAt: now,
         // @ts-expect-error
@@ -157,14 +155,14 @@ export class TaxonomyRepository {
 
   async getAllScales() {
     return this.db.query.scales.findMany({
-      where: eq(schema.scales.isArchived, false),
+      where: isNull(schema.scales.archivedAt),
       orderBy: [asc(schema.scales.position)],
     });
   }
 
   async getEnabledScales() {
     return this.db.query.scales.findMany({
-      where: (t: any, { and, eq }: any) => and(eq(t.isArchived, false), eq(t.enabled, true)),
+      where: (t: any, { and, eq, isNull }: any) => and(isNull(t.archivedAt), eq(t.enabled, true)),
       orderBy: [asc(schema.scales.position)],
     });
   }

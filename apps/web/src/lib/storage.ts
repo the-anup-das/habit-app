@@ -1,4 +1,4 @@
-import type { StorageProvider } from "./index";
+import type { StorageProvider } from "@chapter/core";
 
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {

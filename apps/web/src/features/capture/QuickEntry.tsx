@@ -1,9 +1,10 @@
-import { CaptureUseCase, WebStorageProvider } from "@chapter/core";
+import { CaptureUseCase } from "@chapter/core";
 import { EntriesRepository, SyncQueue, TaxonomyRepository } from "@chapter/db";
 import { openWebDatabase } from "@chapter/db/drivers/web";
 import { moodColor, moodOnColor } from "@chapter/ui-tokens";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { WebStorageProvider } from "../../lib/storage";
 
 const syncQueue = new SyncQueue();
 
@@ -53,7 +54,7 @@ export function QuickEntry() {
         // Load existing entry
         const existing = await db.query.entries.findFirst({
           where: (t: any, { eq }: any) => eq(t.id, entryId),
-          with: { activities: true },
+          with: { activities: true, scales: true, media: true },
         });
 
         if (existing) {
@@ -94,10 +95,10 @@ export function QuickEntry() {
       {
         ...db,
         query: db.query as any,
-        transaction: async (cb) => {
+        transaction: async (cb: any) => {
           if (typeof db.transaction === "function") {
-            return db.transaction((tx) =>
-              cb({ ...tx, query: tx.query, transaction: async (c) => c(tx) }),
+            return db.transaction((tx: any) =>
+              cb({ ...tx, query: tx.query, transaction: async (c: any) => c(tx) }),
             );
           }
           return cb(db);
@@ -151,10 +152,10 @@ export function QuickEntry() {
       {
         ...db,
         query: db.query as any,
-        transaction: async (cb) => {
+        transaction: async (cb: any) => {
           if (typeof db.transaction === "function") {
-            return db.transaction((tx) =>
-              cb({ ...tx, query: tx.query, transaction: async (c) => c(tx) }),
+            return db.transaction((tx: any) =>
+              cb({ ...tx, query: tx.query, transaction: async (c: any) => c(tx) }),
             );
           }
           return cb(db);

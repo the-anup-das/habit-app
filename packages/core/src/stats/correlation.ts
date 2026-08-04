@@ -27,8 +27,6 @@ function variance(arr: number[], m: number) {
 // Simplistic approximation of two-tailed p-value for Student's t-distribution
 // Since this is just for confidence gating, we only need a rough approximation
 function pValueApprox(t: number, df: number): number {
-  const tSq = t * t;
-  const _x = df / (df + tSq);
   // Approximation of incomplete beta function is complex,
   // For large df (df > 30), t-distribution approaches normal distribution
   // We'll use a very simplified rough threshold map since we only care about p<0.05 and p<0.01

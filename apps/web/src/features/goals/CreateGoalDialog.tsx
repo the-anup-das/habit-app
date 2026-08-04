@@ -1,7 +1,8 @@
-import { getToday } from "@chapter/core";
+import { getLocalDate } from "@chapter/core";
 import { GoalsRepository, SyncQueue, TaxonomyRepository } from "@chapter/db";
 import { openWebDatabase } from "@chapter/db/drivers/web";
 import { useEffect, useState } from "react";
+import { systemClock } from "../../lib/clock";
 
 const syncQueue = new SyncQueue();
 
@@ -32,7 +33,7 @@ export function CreateGoalDialog({
         select: db.select,
       } as any);
       const acts = await taxRepo.getActivitiesWithGroups();
-      const flat = acts.groups.flatMap((g) => g.activities);
+      const flat = acts.groups.flatMap((g: any) => g.activities);
       setActivities(flat);
     }
     loadActivities();
@@ -49,8 +50,8 @@ export function CreateGoalDialog({
       iconId: icon,
       targetType,
       targetCount,
-      activityId: activityId === "manual" ? undefined : activityId,
-      startedOn: getToday(),
+      ...(activityId !== "manual" ? { activityId } : {}),
+      startedOn: getLocalDate(systemClock),
     });
 
     onSaved();

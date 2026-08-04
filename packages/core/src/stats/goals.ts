@@ -20,14 +20,6 @@ export interface GoalProgress {
   progressThisPeriod: number;
 }
 
-function _dateToTimestamp(d: number): number {
-  const str = d.toString();
-  const year = parseInt(str.substring(0, 4), 10);
-  const month = parseInt(str.substring(4, 6), 10) - 1;
-  const day = parseInt(str.substring(6, 8), 10);
-  return new Date(year, month, day).getTime();
-}
-
 function getPeriodStart(date: number, type: GoalData["targetType"]): number {
   const str = date.toString();
   const year = parseInt(str.substring(0, 4), 10);

@@ -86,7 +86,7 @@ export function calculateMoodCount(entries: PopulatedEntry[]) {
     if (!counts[e.mood.id]) {
       counts[e.mood.id] = { name: e.mood.name, count: 0, score: e.mood.score };
     }
-    counts[e.mood.id].count++;
+    counts[e.mood.id]!.count++;
   }
 
   return Object.values(counts).sort((a, b) => b.count - a.count);
@@ -100,7 +100,7 @@ export function calculateActivityCount(entries: PopulatedEntry[]) {
       if (!counts[a.activityId]) {
         counts[a.activityId] = { name: a.activity.name, count: 0 };
       }
-      counts[a.activityId].count++;
+      counts[a.activityId]!.count++;
     }
   }
 

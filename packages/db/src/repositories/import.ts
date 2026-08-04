@@ -1,25 +1,26 @@
 import type { ParsedImportData } from "@chapter/core";
-import { entries, entryActivities, generateId } from "../schema";
-import { BaseRepository } from "./base";
+import { entries, entryActivities } from "../schema";
 import { TaxonomyRepository } from "./taxonomy";
 
-export class ImportRepository extends BaseRepository {
+export class ImportRepository {
+  constructor(private readonly db: any) {}
+
   async bulkImportLegacy(data: ParsedImportData): Promise<number> {
     const taxRepo = new TaxonomyRepository({ ...this.db } as any);
     let count = 0;
 
-    await this.db.transaction(async (tx) => {
+    await this.db.transaction(async (tx: any) => {
       // 1. Resolve Moods
       // We will map legacy moods by name. If missing, create under a generic group.
       const existingMoods = await taxRepo.getMoodsWithGroups();
       const moodMap = new Map<string, string>(); // name -> id
-      existingMoods.forEach((m) => moodMap.set(m.name.toLowerCase(), m.id));
+      existingMoods.forEach((m: any) => moodMap.set(m.name.toLowerCase(), m.id));
 
       let importedMoodGroupId = "";
       const getGenericMoodGroup = async () => {
         if (!importedMoodGroupId) {
           const group = {
-            id: generateId(),
+            id: crypto.randomUUID(),
             name: "Imported Moods",
             color: "#6b7280",
             sortOrder: 99,
@@ -36,7 +37,7 @@ export class ImportRepository extends BaseRepository {
       for (const mName of data.uniqueMoods) {
         if (!moodMap.has(mName.toLowerCase())) {
           const gId = await getGenericMoodGroup();
-          const id = generateId();
+          const id = crypto.randomUUID();
           await tx
             .insert((taxRepo as any).db._models?.moods || require("../schema").moods)
             .values({
@@ -55,13 +56,13 @@ export class ImportRepository extends BaseRepository {
       const existingActs = await taxRepo.getActivitiesWithGroups();
       const actMap = new Map<string, string>();
       existingActs.groups
-        .flatMap((g) => g.activities)
-        .forEach((a) => actMap.set(a.name.toLowerCase(), a.id));
+        .flatMap((g: any) => g.activities)
+        .forEach((a: any) => actMap.set(a.name.toLowerCase(), a.id));
 
       let importedActGroupId = "";
       const getGenericActGroup = async () => {
         if (!importedActGroupId) {
-          const group = { id: generateId(), name: "Imported Activities", sortOrder: 99 };
+          const group = { id: crypto.randomUUID(), name: "Imported Activities", sortOrder: 99 };
           await tx
             .insert(
               (taxRepo as any).db._models?.activityGroups || require("../schema").activityGroups,
@@ -76,7 +77,7 @@ export class ImportRepository extends BaseRepository {
       for (const aName of data.uniqueActivities) {
         if (!actMap.has(aName.toLowerCase())) {
           const gId = await getGenericActGroup();
-          const id = generateId();
+          const id = crypto.randomUUID();
           await tx
             .insert((taxRepo as any).db._models?.activities || require("../schema").activities)
             .values({
@@ -102,7 +103,7 @@ export class ImportRepository extends BaseRepository {
         const localTime =
           timeParts.length === 2 ? parseInt(`${timeParts[0]}${timeParts[1]}`, 10) : 1200;
 
-        const entryId = generateId();
+        const entryId = crypto.randomUUID();
         await tx.insert(entries).values({
           id: entryId,
           moodId,

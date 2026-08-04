@@ -195,6 +195,9 @@ importers:
 
   packages/db:
     dependencies:
+      '@chapter/core':
+        specifier: workspace:*
+        version: link:../core
       '@sqlite.org/sqlite-wasm':
         specifier: 3.53.0-build1
         version: 3.53.0-build1

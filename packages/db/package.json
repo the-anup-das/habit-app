@@ -16,6 +16,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@chapter/core": "workspace:*",
     "@sqlite.org/sqlite-wasm": "3.53.0-build1",
     "drizzle-orm": "^0.45.2",
     "expo-sqlite": "~15.0.0",

@@ -48,22 +48,3 @@ export const settings = sqliteTable("settings", {
   value: text("value").notNull(),
   updatedAt: integer("updated_at").notNull(),
 });
-
-/**
- * Outbox. Every repository write enqueues here; the sync loop drains it.
- * Present from day one even though sync ships in Phase 4 — retrofitting an
- * op-log after the fact means replaying history you no longer have.
- */
-export const syncOps = sqliteTable("sync_ops", {
-  localSeq: integer("local_seq").primaryKey({ autoIncrement: true }),
-  rowKey: text("row_key").notNull(), // "entries:0192f8a1-…"
-  rev: integer("rev").notNull(),
-  updatedAt: integer("updated_at").notNull(),
-  payload: text("payload").notNull(), // encrypted row snapshot, incl. tombstones
-  pushedAt: integer("pushed_at"),
-});
-
-export const syncState = sqliteTable("sync_state", {
-  key: text("key").primaryKey(), // device_id, server_cursor, last_sync_at
-  value: text("value").notNull(),
-});

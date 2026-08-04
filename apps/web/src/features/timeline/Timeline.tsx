@@ -1,8 +1,8 @@
-import { WebStorageProvider } from "@chapter/core";
 import { runMigrations } from "@chapter/db";
 import { openWebDatabase } from "@chapter/db/drivers/web";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { WebStorageProvider } from "../../lib/storage";
 
 const storage = new WebStorageProvider();
 

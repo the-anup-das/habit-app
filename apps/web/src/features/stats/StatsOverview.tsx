@@ -13,6 +13,7 @@ import { openWebDatabase } from "@chapter/db/drivers/web";
 import { moodColor, moodOnColor } from "@chapter/ui-tokens";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { systemClock } from "../../lib/clock";
 
 export function StatsOverview() {
   const [loading, setLoading] = useState(true);
@@ -39,7 +40,7 @@ export function StatsOverview() {
       const entries = await entriesRepo.getEntriesForPeriod();
       const popEntries = entries as PopulatedEntry[];
 
-      const todayDate = getLocalDate(new Date().getTimezoneOffset());
+      const todayDate = getLocalDate(systemClock);
 
       setStreak(calculateEntryStreak(popEntries, todayDate));
       setMoodCounts(calculateMoodCount(popEntries));
@@ -124,8 +125,6 @@ export function StatsOverview() {
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           {influenceData.length > 0 ? (
             influenceData.map((inf) => {
-              const _isHigh = inf.confidence === "HIGH";
-              const _isMedium = inf.confidence === "MEDIUM";
               const isLow = inf.confidence === "LOW";
               return (
                 <div
