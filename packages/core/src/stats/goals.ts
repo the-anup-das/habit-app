@@ -7,7 +7,7 @@ export interface GoalData {
   startedOn: number;
   activityId: string | null;
   // All dates on which progress was made (either via entry with activity, or manual checkin)
-  progressDates: number[]; 
+  progressDates: number[];
   pauses: { fromDate: number; toDate: number }[];
 }
 
@@ -20,19 +20,19 @@ export interface GoalProgress {
   progressThisPeriod: number;
 }
 
-function dateToTimestamp(d: number): number {
+function _dateToTimestamp(d: number): number {
   const str = d.toString();
-  const year = parseInt(str.substring(0, 4));
-  const month = parseInt(str.substring(4, 6)) - 1;
-  const day = parseInt(str.substring(6, 8));
+  const year = parseInt(str.substring(0, 4), 10);
+  const month = parseInt(str.substring(4, 6), 10) - 1;
+  const day = parseInt(str.substring(6, 8), 10);
   return new Date(year, month, day).getTime();
 }
 
 function getPeriodStart(date: number, type: GoalData["targetType"]): number {
   const str = date.toString();
-  const year = parseInt(str.substring(0, 4));
-  const month = parseInt(str.substring(4, 6)) - 1;
-  const day = parseInt(str.substring(6, 8));
+  const year = parseInt(str.substring(0, 4), 10);
+  const month = parseInt(str.substring(4, 6), 10) - 1;
+  const day = parseInt(str.substring(6, 8), 10);
   const d = new Date(year, month, day);
 
   if (type === "weekly") {
@@ -42,17 +42,17 @@ function getPeriodStart(date: number, type: GoalData["targetType"]): number {
   } else if (type === "monthly") {
     d.setDate(1);
   }
-  
+
   const m = (d.getMonth() + 1).toString().padStart(2, "0");
   const dd = d.getDate().toString().padStart(2, "0");
-  return parseInt(`${d.getFullYear()}${m}${dd}`);
+  return parseInt(`${d.getFullYear()}${m}${dd}`, 10);
 }
 
 function nextPeriodStart(date: number, type: GoalData["targetType"]): number {
   const str = date.toString();
-  const year = parseInt(str.substring(0, 4));
-  const month = parseInt(str.substring(4, 6)) - 1;
-  const day = parseInt(str.substring(6, 8));
+  const year = parseInt(str.substring(0, 4), 10);
+  const month = parseInt(str.substring(4, 6), 10) - 1;
+  const day = parseInt(str.substring(6, 8), 10);
   const d = new Date(year, month, day);
 
   if (type === "daily") {
@@ -64,7 +64,7 @@ function nextPeriodStart(date: number, type: GoalData["targetType"]): number {
   }
   const m = (d.getMonth() + 1).toString().padStart(2, "0");
   const dd = d.getDate().toString().padStart(2, "0");
-  return parseInt(`${d.getFullYear()}${m}${dd}`);
+  return parseInt(`${d.getFullYear()}${m}${dd}`, 10);
 }
 
 export function calculateGoalProgress(goal: GoalData, currentDate: number): GoalProgress {
@@ -79,23 +79,23 @@ export function calculateGoalProgress(goal: GoalData, currentDate: number): Goal
   // We iterate through periods from startedOn until currentDate
   let periodStart = getPeriodStart(goal.startedOn, goal.targetType);
   const currentPeriodStart = getPeriodStart(currentDate, goal.targetType);
-  
+
   let isCompletedThisPeriod = false;
   let progressThisPeriod = 0;
-  let isCompletedToday = progressSet.has(currentDate);
+  const isCompletedToday = progressSet.has(currentDate);
 
   while (periodStart <= currentPeriodStart) {
     const nextStart = nextPeriodStart(periodStart, goal.targetType);
-    
+
     // Check if period is paused
-    const isPaused = pauses.some(p => periodStart >= p.fromDate && periodStart <= p.toDate);
-    
+    const isPaused = pauses.some((p) => periodStart >= p.fromDate && periodStart <= p.toDate);
+
     if (!isPaused) {
       totalPeriods++;
       // Calculate progress in this period
       let count = 0;
       // Very naive counting - in a real app we'd iterate days in period
-      for(let date of goal.progressDates) {
+      for (const date of goal.progressDates) {
         if (date >= periodStart && date < nextStart) {
           count++;
         }
@@ -128,6 +128,6 @@ export function calculateGoalProgress(goal: GoalData, currentDate: number): Goal
     completionRate: totalPeriods > 0 ? completedPeriods / totalPeriods : 0,
     isCompletedToday,
     isCompletedThisPeriod,
-    progressThisPeriod
+    progressThisPeriod,
   };
 }

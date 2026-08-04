@@ -1,13 +1,17 @@
-import * as d3Shape from "d3-shape";
 import * as d3Scale from "d3-scale";
-import { PopulatedEntry } from "../stats/basic";
+import * as d3Shape from "d3-shape";
+import type { PopulatedEntry } from "../stats/basic";
 
 export interface MoodChartPoint {
   localDate: number; // YYYYMMDD
   avgMood: number;
 }
 
-export function generateMoodChartGeometry(entries: PopulatedEntry[], width: number, height: number) {
+export function generateMoodChartGeometry(
+  entries: PopulatedEntry[],
+  width: number,
+  height: number,
+) {
   if (entries.length === 0) return null;
 
   // 1. Group by day and calculate avgMood
@@ -16,13 +20,13 @@ export function generateMoodChartGeometry(entries: PopulatedEntry[], width: numb
     if (!dayGroups.has(e.localDate)) {
       dayGroups.set(e.localDate, []);
     }
-    dayGroups.get(e.localDate)!.push(e.mood.score);
+    dayGroups.get(e.localDate)?.push(e.mood.score);
   }
 
   const points: MoodChartPoint[] = Array.from(dayGroups.entries())
     .map(([localDate, scores]) => ({
       localDate,
-      avgMood: scores.reduce((sum, s) => sum + s, 0) / scores.length
+      avgMood: scores.reduce((sum, s) => sum + s, 0) / scores.length,
     }))
     .sort((a, b) => a.localDate - b.localDate);
 
@@ -37,20 +41,17 @@ export function generateMoodChartGeometry(entries: PopulatedEntry[], width: numb
   };
 
   const xDomain = [parseDate(points[0].localDate), parseDate(points[points.length - 1].localDate)];
-  
-  const xScale = d3Scale.scaleTime()
-    .domain(xDomain)
-    .range([0, width]);
+
+  const xScale = d3Scale.scaleTime().domain(xDomain).range([0, width]);
 
   // Y domain is always 1 to 5 (mood score range)
-  const yScale = d3Scale.scaleLinear()
-    .domain([1, 5])
-    .range([height, 0]);
+  const yScale = d3Scale.scaleLinear().domain([1, 5]).range([height, 0]);
 
   // 3. Generate line, breaking on missing days
-  const lineGenerator = d3Shape.line<MoodChartPoint>()
-    .x(d => xScale(parseDate(d.localDate)))
-    .y(d => yScale(d.avgMood))
+  const lineGenerator = d3Shape
+    .line<MoodChartPoint>()
+    .x((d) => xScale(parseDate(d.localDate)))
+    .y((d) => yScale(d.avgMood))
     .defined((d, i, data) => {
       // Line is broken if the gap between this point and the previous point is > 1 day
       if (i === 0) return true;
@@ -63,11 +64,11 @@ export function generateMoodChartGeometry(entries: PopulatedEntry[], width: numb
 
   return {
     path: lineGenerator(points) || "",
-    points: points.map(p => ({
+    points: points.map((p) => ({
       x: xScale(parseDate(p.localDate)),
       y: yScale(p.avgMood),
       score: p.avgMood,
-      localDate: p.localDate
-    }))
+      localDate: p.localDate,
+    })),
   };
 }

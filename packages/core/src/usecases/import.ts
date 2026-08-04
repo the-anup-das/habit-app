@@ -11,7 +11,7 @@ export interface ParsedImportData {
 }
 
 export function parseLegacyCsv(csvString: string): ParsedImportData {
-  const lines = csvString.split(/\r?\n/).filter(line => line.trim() !== "");
+  const lines = csvString.split(/\r?\n/).filter((line) => line.trim() !== "");
   if (lines.length < 2) throw new Error("CSV has no data");
 
   // A very basic CSV parser that handles quotes
@@ -28,7 +28,7 @@ export function parseLegacyCsv(csvString: string): ParsedImportData {
         } else {
           inQuotes = !inQuotes;
         }
-      } else if (char === ',' && !inQuotes) {
+      } else if (char === "," && !inQuotes) {
         result.push(current);
         current = "";
       } else {
@@ -39,8 +39,8 @@ export function parseLegacyCsv(csvString: string): ParsedImportData {
     return result;
   };
 
-  const headers = parseLine(lines[0] as string).map(h => h.trim().toLowerCase());
-  
+  const headers = parseLine(lines[0] as string).map((h) => h.trim().toLowerCase());
+
   const colDate = headers.indexOf("full_date");
   const colTime = headers.indexOf("time");
   const colMood = headers.indexOf("mood");
@@ -68,8 +68,11 @@ export function parseLegacyCsv(csvString: string): ParsedImportData {
     if (!mood) continue;
 
     uniqueMoods.add(mood);
-    const activities = (activitiesRaw as string).split("|").map(a => a.trim()).filter(a => a !== "");
-    activities.forEach(a => uniqueActivities.add(a));
+    const activities = (activitiesRaw as string)
+      .split("|")
+      .map((a) => a.trim())
+      .filter((a) => a !== "");
+    activities.forEach((a) => uniqueActivities.add(a));
 
     entries.push({ full_date, time, mood, activities, note });
   }
@@ -83,9 +86,9 @@ export function parseLegacyCsv(csvString: string): ParsedImportData {
 
 export function previewImport(data: ParsedImportData): string {
   if (data.entries.length === 0) return "No valid entries found.";
-  
+
   // Find date range
-  const dates = data.entries.map(e => e.full_date).sort();
+  const dates = data.entries.map((e) => e.full_date).sort();
   const start = dates[0];
   const end = dates[dates.length - 1];
 

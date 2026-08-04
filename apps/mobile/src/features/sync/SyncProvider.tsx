@@ -1,6 +1,6 @@
-import { useEffect } from "react";
 import { SyncDaemon } from "@chapter/db";
 import { openNativeDatabase } from "@chapter/db/drivers/native";
+import { useEffect } from "react";
 
 export function SyncProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -10,7 +10,7 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
     async function init() {
       const { db } = await openNativeDatabase();
       daemon = new SyncDaemon(db);
-      
+
       // Initial sync
       daemon.sync();
 

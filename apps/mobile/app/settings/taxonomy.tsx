@@ -1,11 +1,20 @@
-import { useState, useCallback } from "react";
-import { View, Text, StyleSheet, ScrollView, Pressable, Alert, TouchableOpacity, Switch } from "react-native";
-import { useFocusEffect } from "expo-router";
-import { openNativeDatabase } from "@chapter/db/drivers/native";
 import { TaxonomyRepository } from "@chapter/db";
+import { openNativeDatabase } from "@chapter/db/drivers/native";
 import { COLORS, RADII } from "@chapter/ui-tokens";
-import { hashPin, getSecuritySettings } from "../../src/features/security/SecurityProvider";
+import { useFocusEffect } from "expo-router";
 import * as SecureStore from "expo-secure-store";
+import { useCallback, useState } from "react";
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { getSecuritySettings, hashPin } from "../../src/features/security/SecurityProvider";
 
 export default function TaxonomySettings() {
   const [loading, setLoading] = useState(true);
@@ -17,7 +26,14 @@ export default function TaxonomySettings() {
 
   const loadData = useCallback(async () => {
     const { db } = await openNativeDatabase();
-    const taxonomyRepo = new TaxonomyRepository({ ...db, query: db.query as any, update: db.update, insert: db.insert, delete: db.delete, select: db.select } as any);
+    const taxonomyRepo = new TaxonomyRepository({
+      ...db,
+      query: db.query as any,
+      update: db.update,
+      insert: db.insert,
+      delete: db.delete,
+      select: db.select,
+    } as any);
     const [mGroups, aData, allScales] = await Promise.all([
       taxonomyRepo.getMoodsWithGroups(),
       taxonomyRepo.getActivitiesWithGroups(),
@@ -30,14 +46,14 @@ export default function TaxonomySettings() {
     const sec = await getSecuritySettings();
     setHasPin(!!sec.pinHash);
     setAutoLock(sec.autoLockMinutes.toString());
-    
+
     setLoading(false);
   }, []);
 
   useFocusEffect(
     useCallback(() => {
       loadData();
-    }, [loadData])
+    }, [loadData]),
   );
 
   const handleSetPin = () => {
@@ -46,8 +62,8 @@ export default function TaxonomySettings() {
       "Enter a 4-digit PIN (or leave blank to remove):",
       [
         { text: "Cancel", style: "cancel" },
-        { 
-          text: "Save", 
+        {
+          text: "Save",
           onPress: async (pin) => {
             if (!pin) {
               await SecureStore.deleteItemAsync("pinHash");
@@ -62,11 +78,11 @@ export default function TaxonomySettings() {
             await SecureStore.setItemAsync("pinHash", hashed);
             setHasPin(true);
             Alert.alert("Success", "PIN set successfully!");
-          }
-        }
+          },
+        },
       ],
       "plain-text",
-      ""
+      "",
     );
   };
 
@@ -78,90 +94,109 @@ export default function TaxonomySettings() {
   };
 
   const handleArchiveMood = async (id: string, name: string) => {
-    Alert.alert(
-      "Archive Mood",
-      `Are you sure you want to archive "${name}"?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        { 
-          text: "Archive", 
-          style: "destructive",
-          onPress: async () => {
-            const { db } = await openNativeDatabase();
-            const taxonomyRepo = new TaxonomyRepository({ ...db, query: db.query as any, update: db.update, insert: db.insert, delete: db.delete, select: db.select } as any);
-            await taxonomyRepo.archiveMood(id);
-            loadData();
-          }
-        }
-      ]
-    );
+    Alert.alert("Archive Mood", `Are you sure you want to archive "${name}"?`, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Archive",
+        style: "destructive",
+        onPress: async () => {
+          const { db } = await openNativeDatabase();
+          const taxonomyRepo = new TaxonomyRepository({
+            ...db,
+            query: db.query as any,
+            update: db.update,
+            insert: db.insert,
+            delete: db.delete,
+            select: db.select,
+          } as any);
+          await taxonomyRepo.archiveMood(id);
+          loadData();
+        },
+      },
+    ]);
   };
 
   const handleArchiveActivity = async (id: string, name: string) => {
-    Alert.alert(
-      "Archive Activity",
-      `Are you sure you want to archive "${name}"?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        { 
-          text: "Archive", 
-          style: "destructive",
-          onPress: async () => {
-            const { db } = await openNativeDatabase();
-            const taxonomyRepo = new TaxonomyRepository({ ...db, query: db.query as any, update: db.update, insert: db.insert, delete: db.delete, select: db.select } as any);
-            await taxonomyRepo.archiveActivity(id);
-            loadData();
-          }
-        }
-      ]
-    );
+    Alert.alert("Archive Activity", `Are you sure you want to archive "${name}"?`, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Archive",
+        style: "destructive",
+        onPress: async () => {
+          const { db } = await openNativeDatabase();
+          const taxonomyRepo = new TaxonomyRepository({
+            ...db,
+            query: db.query as any,
+            update: db.update,
+            insert: db.insert,
+            delete: db.delete,
+            select: db.select,
+          } as any);
+          await taxonomyRepo.archiveActivity(id);
+          loadData();
+        },
+      },
+    ]);
   };
 
   const handleToggleScale = async (id: string, enabled: boolean) => {
     const { db } = await openNativeDatabase();
-    const taxonomyRepo = new TaxonomyRepository({ ...db, query: db.query as any, update: db.update, insert: db.insert, delete: db.delete, select: db.select } as any);
+    const taxonomyRepo = new TaxonomyRepository({
+      ...db,
+      query: db.query as any,
+      update: db.update,
+      insert: db.insert,
+      delete: db.delete,
+      select: db.select,
+    } as any);
     await taxonomyRepo.toggleScale(id, enabled);
     loadData();
   };
 
   const handleAddMood = (groupId: string) => {
-    Alert.prompt(
-      "New Mood",
-      "Enter mood name (with emoji):",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Add",
-          onPress: async (name) => {
-            if (!name) return;
-            const { db } = await openNativeDatabase();
-            const taxonomyRepo = new TaxonomyRepository({ ...db, query: db.query as any, update: db.update, insert: db.insert, delete: db.delete, select: db.select } as any);
-            await taxonomyRepo.createMood({ name, groupId });
-            loadData();
-          }
-        }
-      ]
-    );
+    Alert.prompt("New Mood", "Enter mood name (with emoji):", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Add",
+        onPress: async (name) => {
+          if (!name) return;
+          const { db } = await openNativeDatabase();
+          const taxonomyRepo = new TaxonomyRepository({
+            ...db,
+            query: db.query as any,
+            update: db.update,
+            insert: db.insert,
+            delete: db.delete,
+            select: db.select,
+          } as any);
+          await taxonomyRepo.createMood({ name, groupId });
+          loadData();
+        },
+      },
+    ]);
   };
 
   const handleAddActivity = (groupId: string) => {
-    Alert.prompt(
-      "New Activity",
-      "Enter activity name (with emoji):",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Add",
-          onPress: async (name) => {
-            if (!name) return;
-            const { db } = await openNativeDatabase();
-            const taxonomyRepo = new TaxonomyRepository({ ...db, query: db.query as any, update: db.update, insert: db.insert, delete: db.delete, select: db.select } as any);
-            await taxonomyRepo.createActivity({ name, groupId });
-            loadData();
-          }
-        }
-      ]
-    );
+    Alert.prompt("New Activity", "Enter activity name (with emoji):", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Add",
+        onPress: async (name) => {
+          if (!name) return;
+          const { db } = await openNativeDatabase();
+          const taxonomyRepo = new TaxonomyRepository({
+            ...db,
+            query: db.query as any,
+            update: db.update,
+            insert: db.insert,
+            delete: db.delete,
+            select: db.select,
+          } as any);
+          await taxonomyRepo.createActivity({ name, groupId });
+          loadData();
+        },
+      },
+    ]);
   };
 
   if (loading) {
@@ -175,14 +210,14 @@ export default function TaxonomySettings() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.sectionHeader}>Moods</Text>
-      {moodGroups.map(group => (
+      {moodGroups.map((group) => (
         <View key={group.id} style={styles.groupContainer}>
           <Text style={styles.groupTitle}>{group.nameKey}</Text>
           <View style={styles.chipRow}>
             {group.moods.map((mood: any) => (
-              <Pressable 
-                key={mood.id} 
-                style={styles.chip} 
+              <Pressable
+                key={mood.id}
+                style={styles.chip}
                 onLongPress={() => handleArchiveMood(mood.id, mood.name)}
               >
                 <Text style={styles.chipText}>{mood.name}</Text>
@@ -196,14 +231,14 @@ export default function TaxonomySettings() {
       ))}
 
       <Text style={[styles.sectionHeader, { marginTop: 32 }]}>Activities</Text>
-      {activityGroups.map(group => (
+      {activityGroups.map((group) => (
         <View key={group.id} style={styles.groupContainer}>
           <Text style={styles.groupTitle}>{group.name}</Text>
           <View style={styles.chipRow}>
             {group.activities.map((act: any) => (
-              <Pressable 
-                key={act.id} 
-                style={styles.chip} 
+              <Pressable
+                key={act.id}
+                style={styles.chip}
                 onLongPress={() => handleArchiveActivity(act.id, act.name)}
               >
                 <Text style={styles.chipText}>{act.name}</Text>
@@ -221,10 +256,20 @@ export default function TaxonomySettings() {
       <Text style={styles.sectionHeader}>Numeric Scales</Text>
       <View style={[styles.card, { padding: 0 }]}>
         {scales.map((scale, i) => (
-          <View key={scale.id} style={[styles.cardItem, i > 0 && { borderTopWidth: 1, borderTopColor: COLORS.light.surface2 }]}>
+          <View
+            key={scale.id}
+            style={[
+              styles.cardItem,
+              i > 0 && { borderTopWidth: 1, borderTopColor: COLORS.light.surface2 },
+            ]}
+          >
             <View>
-              <Text style={styles.cardItemTitle}>{scale.iconId} {scale.name}</Text>
-              <Text style={styles.cardItemDesc}>{scale.minValue} to {scale.maxValue} {scale.unit}</Text>
+              <Text style={styles.cardItemTitle}>
+                {scale.iconId} {scale.name}
+              </Text>
+              <Text style={styles.cardItemDesc}>
+                {scale.minValue} to {scale.maxValue} {scale.unit}
+              </Text>
             </View>
             <Switch
               value={scale.enabled}
@@ -250,13 +295,17 @@ export default function TaxonomySettings() {
         </View>
 
         {hasPin && (
-          <View style={[styles.cardItem, { borderTopWidth: 1, borderTopColor: COLORS.light.surface2 }]}>
+          <View
+            style={[styles.cardItem, { borderTopWidth: 1, borderTopColor: COLORS.light.surface2 }]}
+          >
             <View>
               <Text style={styles.cardItemTitle}>Auto-Lock</Text>
               <Text style={styles.cardItemDesc}>Require PIN after backgrounding</Text>
             </View>
             <TouchableOpacity onPress={handleToggleAutoLock} style={styles.addButton}>
-              <Text style={styles.addButtonText}>{autoLock === "never" ? "Never" : "Immediately"}</Text>
+              <Text style={styles.addButtonText}>
+                {autoLock === "never" ? "Never" : "Immediately"}
+              </Text>
             </TouchableOpacity>
           </View>
         )}
@@ -270,7 +319,7 @@ export default function TaxonomySettings() {
             <Text style={styles.cardItemTitle}>Export to CSV</Text>
             <Text style={styles.cardItemDesc}>Download a copy of your entries</Text>
           </View>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.addButton}
             onPress={async () => {
               const { generateCsvExport, PopulatedEntry } = await import("@chapter/core");
@@ -281,13 +330,25 @@ export default function TaxonomySettings() {
 
               try {
                 const { db } = await openNativeDatabase();
-                const entriesRepo = new EntriesRepository({ ...db, query: db.query as any, update: db.update, insert: db.insert, delete: db.delete, select: db.select, transaction: db.transaction } as any);
+                const entriesRepo = new EntriesRepository({
+                  ...db,
+                  query: db.query as any,
+                  update: db.update,
+                  insert: db.insert,
+                  delete: db.delete,
+                  select: db.select,
+                  transaction: db.transaction,
+                } as any);
                 const entries = await entriesRepo.getEntriesForPeriod();
                 const csv = generateCsvExport(entries as PopulatedEntry[]);
-                
-                const fileUri = FileSystem.documentDirectory + `habit-export-${new Date().toISOString().split("T")[0]}.csv`;
-                await FileSystem.writeAsStringAsync(fileUri, csv, { encoding: FileSystem.EncodingType.UTF8 });
-                
+
+                const fileUri =
+                  FileSystem.documentDirectory +
+                  `habit-export-${new Date().toISOString().split("T")[0]}.csv`;
+                await FileSystem.writeAsStringAsync(fileUri, csv, {
+                  encoding: FileSystem.EncodingType.UTF8,
+                });
+
                 if (await Sharing.isAvailableAsync()) {
                   await Sharing.shareAsync(fileUri, { UTI: "public.comma-separated-values-text" });
                 } else {
@@ -302,44 +363,53 @@ export default function TaxonomySettings() {
           </TouchableOpacity>
         </View>
 
-        <View style={[styles.cardItem, { borderTopWidth: 1, borderTopColor: COLORS.light.surface2 }]}>
+        <View
+          style={[styles.cardItem, { borderTopWidth: 1, borderTopColor: COLORS.light.surface2 }]}
+        >
           <View>
             <Text style={styles.cardItemTitle}>Import from Legacy App</Text>
             <Text style={styles.cardItemDesc}>Select a CSV export file</Text>
           </View>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.addButton}
             onPress={async () => {
               const DocumentPicker = await import("expo-document-picker");
               const FileSystem = await import("expo-file-system");
               const { parseLegacyCsv, previewImport } = await import("@chapter/core");
-              
+
               try {
-                const result = await DocumentPicker.getDocumentAsync({ type: ["text/csv", "text/comma-separated-values"], copyToCacheDirectory: true });
+                const result = await DocumentPicker.getDocumentAsync({
+                  type: ["text/csv", "text/comma-separated-values"],
+                  copyToCacheDirectory: true,
+                });
                 if (result.canceled) return;
-                
+
                 const fileUri = result.assets[0].uri;
-                const text = await FileSystem.readAsStringAsync(fileUri, { encoding: FileSystem.EncodingType.UTF8 });
-                
+                const text = await FileSystem.readAsStringAsync(fileUri, {
+                  encoding: FileSystem.EncodingType.UTF8,
+                });
+
                 const parsed = parseLegacyCsv(text);
                 const preview = previewImport(parsed);
-                
-                Alert.alert(
-                  "Import Preview",
-                  preview + "\n\nProceed?",
-                  [
-                    { text: "Cancel", style: "cancel" },
-                    { text: "Import", onPress: async () => {
+
+                Alert.alert("Import Preview", `${preview}\n\nProceed?`, [
+                  { text: "Cancel", style: "cancel" },
+                  {
+                    text: "Import",
+                    onPress: async () => {
                       const { openNativeDatabase } = await import("@chapter/db/drivers/native");
                       const { ImportRepository } = await import("@chapter/db");
                       const { db } = await openNativeDatabase();
-                      const importRepo = new ImportRepository({ ...db, transaction: db.transaction } as any);
+                      const importRepo = new ImportRepository({
+                        ...db,
+                        transaction: db.transaction,
+                      } as any);
                       const count = await importRepo.bulkImportLegacy(parsed);
                       Alert.alert("Success", `Imported ${count} entries!`);
                       loadData();
-                    }}
-                  ]
-                );
+                    },
+                  },
+                ]);
               } catch (err: any) {
                 Alert.alert("Import Failed", err.message);
               }
@@ -399,7 +469,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 16,
     backgroundColor: COLORS.light.surface1,
-    borderRadius: parseInt(RADII["xl"], 10) || 16,
+    borderRadius: parseInt(RADII.xl, 10) || 16,
     borderWidth: 1,
     borderColor: COLORS.light.surface2,
   },
@@ -412,7 +482,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 16,
     backgroundColor: "transparent",
-    borderRadius: parseInt(RADII["xl"], 10) || 16,
+    borderRadius: parseInt(RADII.xl, 10) || 16,
     borderWidth: 1,
     borderStyle: "dashed",
     borderColor: COLORS.light.ink3,
@@ -464,5 +534,5 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_600SemiBold",
     fontSize: 14,
     color: COLORS.light.ink1,
-  }
+  },
 });

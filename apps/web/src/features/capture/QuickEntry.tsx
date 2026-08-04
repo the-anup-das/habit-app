@@ -1,10 +1,9 @@
 import { CaptureUseCase, WebStorageProvider } from "@chapter/core";
-import { EntriesRepository, TaxonomyRepository } from "@chapter/db";
+import { EntriesRepository, SyncQueue, TaxonomyRepository } from "@chapter/db";
 import { openWebDatabase } from "@chapter/db/drivers/web";
 import { moodColor, moodOnColor } from "@chapter/ui-tokens";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { SyncQueue } from "@chapter/db";
 
 const syncQueue = new SyncQueue();
 
@@ -62,13 +61,13 @@ export function QuickEntry() {
           setNote(existing.note ?? "");
           setHappenedAt(existing.happenedAt);
           setSelectedActivities(new Set(existing.activities.map((a: any) => a.activityId)));
-          
+
           if (existing.scales) {
             const vals: Record<string, number> = {};
-            existing.scales.forEach((s: any) => vals[s.scaleId] = s.value);
+            existing.scales.forEach((s: any) => (vals[s.scaleId] = s.value));
             setScaleValues(vals);
           }
-          
+
           if (existing.media) {
             setMedia(existing.media);
           }
@@ -91,18 +90,21 @@ export function QuickEntry() {
     if (!selectedMood) return;
 
     const { db } = await openWebDatabase();
-    const entriesRepo = new EntriesRepository({
-      ...db,
-      query: db.query as any,
-      transaction: async (cb) => {
-        if (typeof db.transaction === "function") {
-          return db.transaction((tx) =>
-            cb({ ...tx, query: tx.query, transaction: async (c) => c(tx) }),
-          );
-        }
-        return cb(db);
-      },
-    } as any, syncQueue.enqueue.bind(syncQueue));
+    const entriesRepo = new EntriesRepository(
+      {
+        ...db,
+        query: db.query as any,
+        transaction: async (cb) => {
+          if (typeof db.transaction === "function") {
+            return db.transaction((tx) =>
+              cb({ ...tx, query: tx.query, transaction: async (c) => c(tx) }),
+            );
+          }
+          return cb(db);
+        },
+      } as any,
+      syncQueue.enqueue.bind(syncQueue),
+    );
 
     const capture = new CaptureUseCase({
       entriesRepo,
@@ -112,7 +114,10 @@ export function QuickEntry() {
       },
     });
 
-    const scalesToSave = Object.entries(scaleValues).map(([scaleId, value]) => ({ scaleId, value }));
+    const scalesToSave = Object.entries(scaleValues).map(([scaleId, value]) => ({
+      scaleId,
+      value,
+    }));
 
     if (entryId) {
       await capture.updateQuickEntry({
@@ -142,18 +147,21 @@ export function QuickEntry() {
     if (!entryId) return;
 
     const { db } = await openWebDatabase();
-    const entriesRepo = new EntriesRepository({
-      ...db,
-      query: db.query as any,
-      transaction: async (cb) => {
-        if (typeof db.transaction === "function") {
-          return db.transaction((tx) =>
-            cb({ ...tx, query: tx.query, transaction: async (c) => c(tx) }),
-          );
-        }
-        return cb(db);
-      },
-    } as any, syncQueue.enqueue.bind(syncQueue));
+    const entriesRepo = new EntriesRepository(
+      {
+        ...db,
+        query: db.query as any,
+        transaction: async (cb) => {
+          if (typeof db.transaction === "function") {
+            return db.transaction((tx) =>
+              cb({ ...tx, query: tx.query, transaction: async (c) => c(tx) }),
+            );
+          }
+          return cb(db);
+        },
+      } as any,
+      syncQueue.enqueue.bind(syncQueue),
+    );
 
     const capture = new CaptureUseCase({
       entriesRepo,
@@ -170,13 +178,38 @@ export function QuickEntry() {
   if (loading) return <div style={{ padding: "1rem" }}>Loading...</div>;
 
   return (
-    <div style={{ padding: "1.5rem", paddingBottom: "8rem", maxWidth: "40rem", margin: "0 auto", position: "relative" }}>
-      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
-        <h2 style={{ fontSize: "var(--font-size-2xl)", margin: 0 }}>{entryId ? "Edit Entry" : "How are you?"}</h2>
+    <div
+      style={{
+        padding: "1.5rem",
+        paddingBottom: "8rem",
+        maxWidth: "40rem",
+        margin: "0 auto",
+        position: "relative",
+      }}
+    >
+      <header
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "2rem",
+        }}
+      >
+        <h2 style={{ fontSize: "var(--font-size-2xl)", margin: 0 }}>
+          {entryId ? "Edit Entry" : "How are you?"}
+        </h2>
         {entryId && (
-          <button 
-            onClick={handleDelete} 
-            style={{ color: "#ef4444", background: "rgba(239, 68, 68, 0.1)", border: "none", padding: "0.5rem 1rem", borderRadius: "var(--radius-full)", cursor: "pointer", fontWeight: "600" }}
+          <button
+            onClick={handleDelete}
+            style={{
+              color: "#ef4444",
+              background: "rgba(239, 68, 68, 0.1)",
+              border: "none",
+              padding: "0.5rem 1rem",
+              borderRadius: "var(--radius-full)",
+              cursor: "pointer",
+              fontWeight: "600",
+            }}
           >
             Delete
           </button>
@@ -185,13 +218,15 @@ export function QuickEntry() {
 
       {/* Date/Time Picker */}
       <section style={{ marginBottom: "2rem" }}>
-        <input 
-          type="datetime-local" 
-          value={new Date(happenedAt - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)}
+        <input
+          type="datetime-local"
+          value={new Date(happenedAt - new Date().getTimezoneOffset() * 60000)
+            .toISOString()
+            .slice(0, 16)}
           onChange={(e) => setHappenedAt(new Date(e.target.value).getTime())}
-          style={{ 
-            padding: "0.75rem 1rem", 
-            borderRadius: "var(--radius-lg)", 
+          style={{
+            padding: "0.75rem 1rem",
+            borderRadius: "var(--radius-lg)",
             border: "1px solid var(--color-surface-3)",
             background: "var(--color-surface-2)",
             color: "var(--color-ink-1)",
@@ -203,18 +238,32 @@ export function QuickEntry() {
       </section>
 
       {/* Mood Picker */}
-      <section style={{ marginBottom: "2.5rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-        {moodGroups.map(group => (
+      <section
+        style={{ marginBottom: "2.5rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}
+      >
+        {moodGroups.map((group) => (
           <div key={group.id}>
-            <h3 style={{ fontSize: "var(--font-size-sm)", color: "var(--color-ink-3)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.75rem" }}>{group.nameKey}</h3>
+            <h3
+              style={{
+                fontSize: "var(--font-size-sm)",
+                color: "var(--color-ink-3)",
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                marginBottom: "0.75rem",
+              }}
+            >
+              {group.nameKey}
+            </h3>
             <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
               {group.moods.map((mood: any) => {
                 const isSelected = selectedMood === mood.id;
-                const bg = isSelected ? moodColor(group.score as any, "dark") : "var(--color-surface-2)";
+                const bg = isSelected
+                  ? moodColor(group.score as any, "dark")
+                  : "var(--color-surface-2)";
                 const fg = isSelected ? moodOnColor(group.score as any) : "var(--color-ink-1)";
                 return (
-                  <button 
-                    key={mood.id} 
+                  <button
+                    key={mood.id}
                     onClick={() => setSelectedMood(mood.id)}
                     style={{
                       padding: "0.75rem 1.25rem",
@@ -238,21 +287,35 @@ export function QuickEntry() {
       </section>
 
       {/* Activities Picker */}
-      <section style={{ marginBottom: "2.5rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+      <section
+        style={{ marginBottom: "2.5rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}
+      >
         <h3 style={{ fontSize: "var(--font-size-xl)", marginBottom: "0.25rem" }}>Activities</h3>
-        {activityGroups.map(group => (
+        {activityGroups.map((group) => (
           <div key={group.id}>
-            <h4 style={{ fontSize: "var(--font-size-sm)", color: "var(--color-ink-3)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.75rem" }}>{group.name}</h4>
+            <h4
+              style={{
+                fontSize: "var(--font-size-sm)",
+                color: "var(--color-ink-3)",
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                marginBottom: "0.75rem",
+              }}
+            >
+              {group.name}
+            </h4>
             <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
               {group.activities.map((act: any) => (
-                <button 
-                  key={act.id} 
+                <button
+                  key={act.id}
                   onClick={() => toggleActivity(act.id)}
                   style={{
                     padding: "0.5rem 1rem",
                     borderRadius: "var(--radius-lg)",
                     border: "none",
-                    background: selectedActivities.has(act.id) ? "var(--color-primary)" : "var(--color-surface-2)",
+                    background: selectedActivities.has(act.id)
+                      ? "var(--color-primary)"
+                      : "var(--color-surface-2)",
                     color: selectedActivities.has(act.id) ? "white" : "var(--color-ink-2)",
                     cursor: "pointer",
                     fontWeight: selectedActivities.has(act.id) ? "600" : "500",
@@ -266,13 +329,27 @@ export function QuickEntry() {
                   const newName = prompt("New activity name?");
                   if (!newName) return;
                   const { db } = await openWebDatabase();
-                  const taxonomyRepo = new TaxonomyRepository({ ...db, query: db.query as any, update: db.update, insert: db.insert, delete: db.delete, select: db.select });
-                  const newId = await taxonomyRepo.createActivity({ name: newName, groupId: group.id });
-                  
+                  const taxonomyRepo = new TaxonomyRepository({
+                    ...db,
+                    query: db.query as any,
+                    update: db.update,
+                    insert: db.insert,
+                    delete: db.delete,
+                    select: db.select,
+                  });
+                  const newId = await taxonomyRepo.createActivity({
+                    name: newName,
+                    groupId: group.id,
+                  });
+
                   // Optimistically update the UI group
                   const newAct = { id: newId, name: newName, groupId: group.id };
-                  setActivityGroups(prev => prev.map(g => g.id === group.id ? { ...g, activities: [...g.activities, newAct] } : g));
-                  
+                  setActivityGroups((prev) =>
+                    prev.map((g) =>
+                      g.id === group.id ? { ...g, activities: [...g.activities, newAct] } : g,
+                    ),
+                  );
+
                   // Auto-select it
                   toggleActivity(newId);
                 }}
@@ -292,17 +369,29 @@ export function QuickEntry() {
         ))}
         {ungroupedActivities.length > 0 && (
           <div>
-            <h4 style={{ fontSize: "var(--font-size-sm)", color: "var(--color-ink-3)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.75rem" }}>Other</h4>
+            <h4
+              style={{
+                fontSize: "var(--font-size-sm)",
+                color: "var(--color-ink-3)",
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                marginBottom: "0.75rem",
+              }}
+            >
+              Other
+            </h4>
             <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
               {ungroupedActivities.map((act: any) => (
-                <button 
-                  key={act.id} 
+                <button
+                  key={act.id}
                   onClick={() => toggleActivity(act.id)}
                   style={{
                     padding: "0.5rem 1rem",
                     borderRadius: "var(--radius-lg)",
                     border: "none",
-                    background: selectedActivities.has(act.id) ? "var(--color-primary)" : "var(--color-surface-2)",
+                    background: selectedActivities.has(act.id)
+                      ? "var(--color-primary)"
+                      : "var(--color-surface-2)",
                     color: selectedActivities.has(act.id) ? "white" : "var(--color-ink-2)",
                     cursor: "pointer",
                     fontWeight: selectedActivities.has(act.id) ? "600" : "500",
@@ -318,13 +407,26 @@ export function QuickEntry() {
 
       {/* Scales Slider */}
       {scales.length > 0 && (
-        <section style={{ marginBottom: "2.5rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+        <section
+          style={{
+            marginBottom: "2.5rem",
+            display: "flex",
+            flexDirection: "column",
+            gap: "1.5rem",
+          }}
+        >
           <h3 style={{ fontSize: "var(--font-size-xl)", marginBottom: "0.25rem" }}>Scales</h3>
-          {scales.map(scale => {
+          {scales.map((scale) => {
             const val = scaleValues[scale.id] ?? scale.minValue;
             return (
-              <div key={scale.id} className="glass-panel" style={{ padding: "1.5rem", borderRadius: "var(--radius-xl)" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem" }}>
+              <div
+                key={scale.id}
+                className="glass-panel"
+                style={{ padding: "1.5rem", borderRadius: "var(--radius-xl)" }}
+              >
+                <div
+                  style={{ display: "flex", justifyContent: "space-between", marginBottom: "1rem" }}
+                >
                   <div style={{ fontWeight: "600", fontSize: "var(--font-size-lg)" }}>
                     <span style={{ marginRight: "0.5rem" }}>{scale.iconId}</span>
                     {scale.name}
@@ -333,16 +435,26 @@ export function QuickEntry() {
                     {val} {scale.unit}
                   </div>
                 </div>
-                <input 
-                  type="range" 
-                  min={scale.minValue} 
-                  max={scale.maxValue} 
+                <input
+                  type="range"
+                  min={scale.minValue}
+                  max={scale.maxValue}
                   step={scale.step}
                   value={val}
-                  onChange={(e) => setScaleValues(prev => ({ ...prev, [scale.id]: parseFloat(e.target.value) }))}
+                  onChange={(e) =>
+                    setScaleValues((prev) => ({ ...prev, [scale.id]: parseFloat(e.target.value) }))
+                  }
                   style={{ width: "100%", cursor: "pointer", accentColor: "var(--color-primary)" }}
                 />
-                <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.5rem", fontSize: "var(--font-size-sm)", color: "var(--color-ink-3)" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginTop: "0.5rem",
+                    fontSize: "var(--font-size-sm)",
+                    color: "var(--color-ink-3)",
+                  }}
+                >
                   <span>{scale.minLabel}</span>
                   <span>{scale.maxLabel}</span>
                 </div>
@@ -356,11 +468,19 @@ export function QuickEntry() {
       <section style={{ marginBottom: "2.5rem" }}>
         <h3 style={{ fontSize: "var(--font-size-xl)", marginBottom: "1rem" }}>Photos & Audio</h3>
         <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginBottom: "1rem" }}>
-          <label style={{ padding: "0.75rem 1.25rem", borderRadius: "var(--radius-full)", background: "var(--color-surface-2)", cursor: "pointer", fontWeight: "600" }}>
+          <label
+            style={{
+              padding: "0.75rem 1.25rem",
+              borderRadius: "var(--radius-full)",
+              background: "var(--color-surface-2)",
+              cursor: "pointer",
+              fontWeight: "600",
+            }}
+          >
             + Attach Photo
-            <input 
-              type="file" 
-              accept="image/*" 
+            <input
+              type="file"
+              accept="image/*"
               style={{ display: "none" }}
               onChange={async (e) => {
                 const file = e.target.files?.[0];
@@ -368,21 +488,28 @@ export function QuickEntry() {
                 const reader = new FileReader();
                 reader.onload = async (ev) => {
                   const dataUrl = ev.target?.result as string;
-                  const relPath = await storage.saveMedia(dataUrl, "photo", file.name.split('.').pop() || "jpg");
-                  setMedia(prev => [...prev, {
-                    kind: "photo",
-                    relPath,
-                    mime: file.type || "image/jpeg",
-                    byteSize: file.size,
-                    preview: dataUrl
-                  }]);
+                  const relPath = await storage.saveMedia(
+                    dataUrl,
+                    "photo",
+                    file.name.split(".").pop() || "jpg",
+                  );
+                  setMedia((prev) => [
+                    ...prev,
+                    {
+                      kind: "photo",
+                      relPath,
+                      mime: file.type || "image/jpeg",
+                      byteSize: file.size,
+                      preview: dataUrl,
+                    },
+                  ]);
                 };
                 reader.readAsDataURL(file);
               }}
             />
           </label>
 
-          <button 
+          <button
             type="button"
             onClick={async () => {
               if (window.mediaRecorder && window.mediaRecorder.state === "recording") {
@@ -393,49 +520,84 @@ export function QuickEntry() {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 const recorder = new MediaRecorder(stream);
                 const chunks: BlobPart[] = [];
-                recorder.ondataavailable = e => chunks.push(e.data);
+                recorder.ondataavailable = (e) => chunks.push(e.data);
                 recorder.onstop = async () => {
-                  const blob = new Blob(chunks, { type: 'audio/webm' });
+                  const blob = new Blob(chunks, { type: "audio/webm" });
                   const reader = new FileReader();
                   reader.onload = async (ev) => {
                     const dataUrl = ev.target?.result as string;
                     const relPath = await storage.saveMedia(dataUrl, "audio", "webm");
-                    setMedia(prev => [...prev, {
-                      kind: "audio",
-                      relPath,
-                      mime: "audio/webm",
-                      byteSize: blob.size,
-                      preview: dataUrl
-                    }]);
+                    setMedia((prev) => [
+                      ...prev,
+                      {
+                        kind: "audio",
+                        relPath,
+                        mime: "audio/webm",
+                        byteSize: blob.size,
+                        preview: dataUrl,
+                      },
+                    ]);
                   };
                   reader.readAsDataURL(blob);
-                  stream.getTracks().forEach(track => track.stop());
+                  stream.getTracks().forEach((track) => track.stop());
                 };
                 recorder.start();
                 window.mediaRecorder = recorder;
-              } catch (err) {
+              } catch (_err) {
                 alert("Microphone access denied or unavailable.");
               }
             }}
-            style={{ padding: "0.75rem 1.25rem", borderRadius: "var(--radius-full)", background: "var(--color-surface-2)", border: "none", cursor: "pointer", fontWeight: "600", color: "var(--color-ink-1)" }}
+            style={{
+              padding: "0.75rem 1.25rem",
+              borderRadius: "var(--radius-full)",
+              background: "var(--color-surface-2)",
+              border: "none",
+              cursor: "pointer",
+              fontWeight: "600",
+              color: "var(--color-ink-1)",
+            }}
           >
             🎙 Record Audio
           </button>
         </div>
-        
+
         {media.length > 0 && (
           <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
             {media.map((m, idx) => (
               <div key={idx} style={{ position: "relative" }}>
                 {m.kind === "photo" && (
-                  <img src={m.preview || ""} alt="attachment" style={{ width: 100, height: 100, objectFit: "cover", borderRadius: "var(--radius-lg)" }} />
+                  <img
+                    src={m.preview || ""}
+                    alt="attachment"
+                    style={{
+                      width: 100,
+                      height: 100,
+                      objectFit: "cover",
+                      borderRadius: "var(--radius-lg)",
+                    }}
+                  />
                 )}
                 {m.kind === "audio" && (
-                  <audio src={m.preview || ""} controls style={{ height: 40, width: 200, marginTop: 30 }} />
+                  <audio
+                    src={m.preview || ""}
+                    controls
+                    style={{ height: 40, width: 200, marginTop: 30 }}
+                  />
                 )}
-                <button 
-                  onClick={() => setMedia(prev => prev.filter((_, i) => i !== idx))}
-                  style={{ position: "absolute", top: -8, right: -8, background: "#ef4444", color: "white", border: "none", borderRadius: "50%", width: 24, height: 24, cursor: "pointer" }}
+                <button
+                  onClick={() => setMedia((prev) => prev.filter((_, i) => i !== idx))}
+                  style={{
+                    position: "absolute",
+                    top: -8,
+                    right: -8,
+                    background: "#ef4444",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "50%",
+                    width: 24,
+                    height: 24,
+                    cursor: "pointer",
+                  }}
                 >
                   ×
                 </button>
@@ -463,24 +625,24 @@ export function QuickEntry() {
             fontFamily: "inherit",
             fontSize: "var(--font-size-base)",
             resize: "vertical",
-            boxShadow: "var(--shadow-sm)"
+            boxShadow: "var(--shadow-sm)",
           }}
         />
       </section>
 
       {/* Save Button */}
-      <div 
+      <div
         className="glass-panel"
-        style={{ 
-          position: "fixed", 
-          bottom: "1rem", 
+        style={{
+          position: "fixed",
+          bottom: "1rem",
           left: "50%",
           transform: "translateX(-50%)",
           width: "calc(100% - 2rem)",
-          maxWidth: "40rem", 
+          maxWidth: "40rem",
           padding: "1rem",
           borderRadius: "var(--radius-2xl)",
-          zIndex: 10
+          zIndex: 10,
         }}
       >
         <button

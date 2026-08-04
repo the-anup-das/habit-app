@@ -16,6 +16,6 @@ export * from "./repositories/taxonomy";
 export * as schema from "./schema";
 export * from "./schema";
 export * from "./sync/crypto";
+export * from "./sync/daemon";
 export * from "./sync/keystore";
 export * from "./sync/queue";
-export * from "./sync/daemon";

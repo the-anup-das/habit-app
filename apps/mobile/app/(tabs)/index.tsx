@@ -1,19 +1,18 @@
-import { useState, useEffect, useCallback } from "react";
-import { View, Text, StyleSheet, ScrollView, Pressable, Animated } from "react-native";
-import { Link, useFocusEffect } from "expo-router";
-import { openNativeDatabase } from "@chapter/db/drivers/native";
 import { runMigrations } from "@chapter/db";
-import { COLORS, TYPOGRAPHY, RADII, SHADOWS } from "@chapter/ui-tokens";
-import { NativeStorageProvider } from "../../src/lib/storage";
-import { Image } from "react-native";
+import { openNativeDatabase } from "@chapter/db/drivers/native";
+import { COLORS, RADII } from "@chapter/ui-tokens";
 import { Audio } from "expo-av";
+import { Link, useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { Animated, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { NativeStorageProvider } from "../../src/lib/storage";
 
 const storage = new NativeStorageProvider();
 
 function MediaAttachment({ media }: { media: any }) {
   const [url, setUrl] = useState<string>("");
   const [sound, setSound] = useState<Audio.Sound | null>(null);
-  
+
   useEffect(() => {
     storage.getMediaUrl(media.relPath).then(setUrl);
   }, [media.relPath]);
@@ -21,13 +20,25 @@ function MediaAttachment({ media }: { media: any }) {
   if (!url) return null;
 
   if (media.kind === "photo") {
-    return <Image source={{ uri: url }} style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 12 }} />;
+    return (
+      <Image
+        source={{ uri: url }}
+        style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 12 }}
+      />
+    );
   }
-  
+
   if (media.kind === "audio") {
     return (
-      <Pressable 
-        style={{ width: 80, height: 80, backgroundColor: COLORS.light.surface2, borderRadius: 12, alignItems: 'center', justifyContent: 'center' }}
+      <Pressable
+        style={{
+          width: 80,
+          height: 80,
+          backgroundColor: COLORS.light.surface2,
+          borderRadius: 12,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
         onPress={async () => {
           if (sound) {
             await sound.replayAsync();
@@ -42,7 +53,7 @@ function MediaAttachment({ media }: { media: any }) {
       </Pressable>
     );
   }
-  
+
   return null;
 }
 
@@ -56,14 +67,14 @@ export default function Timeline() {
   const loadData = useCallback(async () => {
     const { db, exec, query } = await openNativeDatabase();
     await runMigrations({ exec, query });
-    
+
     const rows = await db.query.entries.findMany({
-      with: { 
+      with: {
         mood: true,
         scales: {
-          with: { scale: true }
+          with: { scale: true },
         },
-        media: true
+        media: true,
       },
       orderBy: (fields: any, { desc }: any) => [desc(fields.happenedAt)],
     });
@@ -74,12 +85,14 @@ export default function Timeline() {
   useFocusEffect(
     useCallback(() => {
       loadData();
-    }, [loadData])
+    }, [loadData]),
   );
 
   const scale = new Animated.Value(1);
-  const handlePressIn = () => Animated.spring(scale, { toValue: 0.95, useNativeDriver: true }).start();
-  const handlePressOut = () => Animated.spring(scale, { toValue: 1, useNativeDriver: true }).start();
+  const handlePressIn = () =>
+    Animated.spring(scale, { toValue: 0.95, useNativeDriver: true }).start();
+  const handlePressOut = () =>
+    Animated.spring(scale, { toValue: 1, useNativeDriver: true }).start();
 
   return (
     <View style={styles.container}>
@@ -99,10 +112,13 @@ export default function Timeline() {
                 <View style={styles.cardHeader}>
                   <Text style={styles.moodName}>{entry.mood?.name ?? "Unknown"}</Text>
                   <Text style={styles.timeText}>
-                    {new Date(entry.happenedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {new Date(entry.happenedAt).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </Text>
                 </View>
-                
+
                 {entry.scales && entry.scales.length > 0 && (
                   <View style={styles.scalesRow}>
                     {entry.scales.map((s: any) => (
@@ -116,7 +132,7 @@ export default function Timeline() {
                 )}
 
                 {entry.media && entry.media.length > 0 && (
-                  <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
+                  <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap", marginTop: 12 }}>
                     {entry.media.map((m: any) => (
                       <MediaAttachment key={m.id} media={m} />
                     ))}
@@ -124,7 +140,11 @@ export default function Timeline() {
                 )}
 
                 <Text style={styles.dateText}>
-                  {new Date(entry.happenedAt).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                  {new Date(entry.happenedAt).toLocaleDateString(undefined, {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
+                  })}
                 </Text>
               </Pressable>
             </Link>
@@ -298,5 +318,5 @@ const styles = StyleSheet.create({
   },
   navLinkTextActive: {
     color: "#fff",
-  }
+  },
 });

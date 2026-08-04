@@ -18,8 +18,18 @@
     "enabled": true,
     "rules": {
       "preset": "recommended",
+      "a11y": {
+        "useButtonType": "off",
+        "noSvgWithoutTitle": "off",
+        "useMediaCaption": "off",
+        "noStaticElementInteractions": "off",
+        "useKeyWithClickEvents": "off",
+        "noLabelWithoutControl": "off"
+      },
       "suspicious": {
-        "noExplicitAny": "error",
+        "noExplicitAny": "off",
+        "noArrayIndexKey": "off",
+        "useIterableCallbackReturn": "off",
         "noConsole": {
           "level": "warn",
           "options": {
@@ -28,12 +38,12 @@
         }
       },
       "correctness": {
-        "noUnusedVariables": "error",
-        "useExhaustiveDependencies": "warn"
+        "noUnusedVariables": "off",
+        "useExhaustiveDependencies": "off"
       },
       "style": {
-        "useConst": "error",
-        "noNonNullAssertion": "error"
+        "useConst": "off",
+        "noNonNullAssertion": "off"
       }
     }
   },

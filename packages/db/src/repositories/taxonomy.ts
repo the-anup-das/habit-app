@@ -1,6 +1,4 @@
 import { asc, eq } from "drizzle-orm";
-import type { ExtractTablesWithRelations } from "drizzle-orm/relation";
-import type { SQLiteTransaction } from "drizzle-orm/sqlite-core";
 import * as schema from "../schema";
 
 // We don't want to tie repositories to a specific driver (WebDatabase or NativeDatabase),
@@ -22,7 +20,7 @@ type AnyDb = {
 export class TaxonomyRepository {
   constructor(
     private readonly db: AnyDb,
-    private readonly onMutate?: (tx: any, rowKey: string, rev: number, data: any) => Promise<void>
+    private readonly onMutate?: (tx: any, rowKey: string, rev: number, data: any) => Promise<void>,
   ) {}
 
   async getMoodsWithGroups() {
@@ -73,31 +71,37 @@ export class TaxonomyRepository {
       rev: 1,
     };
     await this.db.insert(schema.moods).values(entry);
-    
+
     if (this.onMutate) {
       await this.onMutate(this.db as any, `moods:${id}`, 1, entry);
     }
-    
+
     return id;
   }
 
   async updateMood(id: string, params: { name?: string; position?: number }) {
     const now = Date.now();
-    await this.db.update(schema.moods).set({
-      ...params,
-      updatedAt: now,
-      rev: sql`${schema.moods.rev} + 1`,
-    }).where(eq(schema.moods.id, id));
+    await this.db
+      .update(schema.moods)
+      .set({
+        ...params,
+        updatedAt: now,
+        rev: sql`${schema.moods.rev} + 1`,
+      })
+      .where(eq(schema.moods.id, id));
   }
 
   async archiveMood(id: string) {
     const now = Date.now();
-    await this.db.update(schema.moods).set({
-      isArchived: true,
-      archivedAt: now,
-      updatedAt: now,
-      rev: sql`${schema.moods.rev} + 1`,
-    }).where(eq(schema.moods.id, id));
+    await this.db
+      .update(schema.moods)
+      .set({
+        isArchived: true,
+        archivedAt: now,
+        updatedAt: now,
+        rev: sql`${schema.moods.rev} + 1`,
+      })
+      .where(eq(schema.moods.id, id));
   }
 
   async createActivity(params: { groupId?: string; name: string; position?: number }) {
@@ -114,32 +118,41 @@ export class TaxonomyRepository {
       rev: 1,
     };
     await this.db.insert(schema.activities).values(entry);
-    
+
     if (this.onMutate) {
       await this.onMutate(this.db as any, `activities:${id}`, 1, entry);
     }
-    
+
     return id;
   }
 
-  async updateActivity(id: string, params: { name?: string; groupId?: string | null; position?: number }) {
+  async updateActivity(
+    id: string,
+    params: { name?: string; groupId?: string | null; position?: number },
+  ) {
     const now = Date.now();
-    await this.db.update(schema.activities).set({
-      ...params,
-      updatedAt: now,
-      rev: sql`${schema.activities.rev} + 1`,
-    }).where(eq(schema.activities.id, id));
+    await this.db
+      .update(schema.activities)
+      .set({
+        ...params,
+        updatedAt: now,
+        rev: sql`${schema.activities.rev} + 1`,
+      })
+      .where(eq(schema.activities.id, id));
   }
 
   async archiveActivity(id: string) {
     const now = Date.now();
-    await this.db.update(schema.activities).set({
-      isArchived: true,
-      archivedAt: now,
-      updatedAt: now,
-      // @ts-ignore
-      rev: schema.activities.rev + 1,
-    }).where(eq(schema.activities.id, id));
+    await this.db
+      .update(schema.activities)
+      .set({
+        isArchived: true,
+        archivedAt: now,
+        updatedAt: now,
+        // @ts-expect-error
+        rev: schema.activities.rev + 1,
+      })
+      .where(eq(schema.activities.id, id));
   }
 
   async getAllScales() {
@@ -158,10 +171,12 @@ export class TaxonomyRepository {
 
   async toggleScale(id: string, enabled: boolean) {
     const now = Date.now();
-    await this.db.update(schema.scales).set({
-      enabled,
-      updatedAt: now,
-    }).where(eq(schema.scales.id, id));
+    await this.db
+      .update(schema.scales)
+      .set({
+        enabled,
+        updatedAt: now,
+      })
+      .where(eq(schema.scales.id, id));
   }
 }
-

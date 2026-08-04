@@ -1,12 +1,12 @@
-import { useState, useCallback } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from "react-native";
+import { getToday, HabitEngine } from "@chapter/core";
+import { GoalsRepository, SyncQueue } from "@chapter/db";
 import { openNativeDatabase } from "@chapter/db/drivers/native";
-import { GoalsRepository } from "@chapter/db";
-import { HabitEngine, getToday } from "@chapter/core";
-import { SyncQueue } from "@chapter/db";
-import { useFocusEffect, router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
+import { RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const syncQueue = new SyncQueue();
+
 import { COLORS } from "@chapter/ui-tokens";
 
 export default function GoalsScreen() {
@@ -15,20 +15,20 @@ export default function GoalsScreen() {
 
   const loadData = useCallback(async () => {
     const { db } = await openNativeDatabase();
-    const goalsRepo = new GoalsRepository(db, syncQueue.enqueue.bind(syncQueue));
-    
+    const _goalsRepo = new GoalsRepository(db, syncQueue.enqueue.bind(syncQueue));
+
     const habitEngine = new HabitEngine(db);
     const today = getToday();
     const withProgress = await habitEngine.getDailyProgress(today);
-    
+
     const goalsWithScore = withProgress.map((p: any) => ({
       ...p,
       strengthScore: habitEngine.calculateStrengthScore(
         p.amount > 0 ? [{ localDate: today, amount: p.amount }] : [],
-        today
-      )
+        today,
+      ),
     }));
-    
+
     setGoals(goalsWithScore);
     setLoading(false);
   }, []);
@@ -36,7 +36,7 @@ export default function GoalsScreen() {
   useFocusEffect(
     useCallback(() => {
       loadData();
-    }, [loadData])
+    }, [loadData]),
   );
 
   return (
@@ -44,7 +44,7 @@ export default function GoalsScreen() {
       {loading ? (
         <Text style={styles.emptyText}>Loading goals...</Text>
       ) : (
-        <ScrollView 
+        <ScrollView
           contentContainerStyle={styles.scrollContent}
           refreshControl={<RefreshControl refreshing={loading} onRefresh={loadData} />}
         >
@@ -52,7 +52,9 @@ export default function GoalsScreen() {
             <View style={styles.emptyState}>
               <Text style={{ fontSize: 48, marginBottom: 16 }}>🎯</Text>
               <Text style={styles.emptyTitle}>No active goals</Text>
-              <Text style={styles.emptyText}>Create a goal to start tracking your habits and building streaks.</Text>
+              <Text style={styles.emptyText}>
+                Create a goal to start tracking your habits and building streaks.
+              </Text>
             </View>
           ) : (
             goals.map((item: any) => {
@@ -65,11 +67,18 @@ export default function GoalsScreen() {
                     <View>
                       <Text style={styles.goalIcon}>{goal.iconId}</Text>
                       <Text style={styles.goalTitle}>{goal.name}</Text>
-                      <Text style={styles.goalSubtitle}>{goal.targetCount}x {goal.targetType}</Text>
+                      <Text style={styles.goalSubtitle}>
+                        {goal.targetCount}x {goal.targetType}
+                      </Text>
                     </View>
                     <View style={styles.streakBadge}>
                       <Text style={{ fontSize: 16 }}>💪</Text>
-                      <Text style={[styles.streakText, { color: strengthScore > 0 ? "#10b981" : COLORS.light.ink3 }]}>
+                      <Text
+                        style={[
+                          styles.streakText,
+                          { color: strengthScore > 0 ? "#10b981" : COLORS.light.ink3 },
+                        ]}
+                      >
                         {strengthScore}%
                       </Text>
                     </View>
@@ -78,25 +87,43 @@ export default function GoalsScreen() {
                   <View style={styles.progressSection}>
                     <View style={styles.progressLabels}>
                       <Text style={styles.progressLabelText}>Progress Today</Text>
-                      <Text style={styles.progressLabelText}>{amount} / {goal.targetCount}</Text>
+                      <Text style={styles.progressLabelText}>
+                        {amount} / {goal.targetCount}
+                      </Text>
                     </View>
                     <View style={styles.progressBarBg}>
-                      <View style={[styles.progressBarFill, { width: `${pct}%`, backgroundColor: completed ? COLORS.light.primary : COLORS.light.ink2 }]} />
+                      <View
+                        style={[
+                          styles.progressBarFill,
+                          {
+                            width: `${pct}%`,
+                            backgroundColor: completed ? COLORS.light.primary : COLORS.light.ink2,
+                          },
+                        ]}
+                      />
                     </View>
                   </View>
 
                   {!goal.activityId && (
-                    <TouchableOpacity 
+                    <TouchableOpacity
                       onPress={async () => {
                         const { db } = await openNativeDatabase();
-                        const goalsRepo = new GoalsRepository(db, syncQueue.enqueue.bind(syncQueue));
+                        const goalsRepo = new GoalsRepository(
+                          db,
+                          syncQueue.enqueue.bind(syncQueue),
+                        );
                         await goalsRepo.checkInGoal(goal.id, getToday());
                         loadData();
                       }}
                       disabled={completed}
                       style={[styles.checkinButton, completed && styles.checkinButtonDone]}
                     >
-                      <Text style={[styles.checkinButtonText, completed && styles.checkinButtonTextDone]}>
+                      <Text
+                        style={[
+                          styles.checkinButtonText,
+                          completed && styles.checkinButtonTextDone,
+                        ]}
+                      >
                         {completed ? "Checked In" : "Check In"}
                       </Text>
                     </TouchableOpacity>
@@ -108,10 +135,7 @@ export default function GoalsScreen() {
         </ScrollView>
       )}
 
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() => router.push("/goals/new")}
-      >
+      <TouchableOpacity style={styles.fab} onPress={() => router.push("/goals/new")}>
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
     </View>
@@ -240,5 +264,5 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 32,
     fontFamily: "Inter_600SemiBold",
-  }
+  },
 });

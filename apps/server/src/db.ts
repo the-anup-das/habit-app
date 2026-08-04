@@ -1,6 +1,6 @@
 import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
-import { integer, sqliteTable, text, blob, real } from "drizzle-orm/sqlite-core";
+import { blob, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const changes = sqliteTable("changes", {
   seq: integer("seq", { mode: "number" }).primaryKey({ autoIncrement: true }),

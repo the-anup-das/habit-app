@@ -1,4 +1,4 @@
-import { asc, eq, and, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import * as schema from "../schema";
 
 type AnyDb = {
@@ -17,7 +17,7 @@ type AnyDb = {
 export class GoalsRepository {
   constructor(
     private readonly db: AnyDb,
-    private readonly onMutate?: (tx: any, rowKey: string, rev: number, data: any) => Promise<void>
+    private readonly onMutate?: (tx: any, rowKey: string, rev: number, data: any) => Promise<void>,
   ) {}
 
   async createGoal(params: {
@@ -31,7 +31,7 @@ export class GoalsRepository {
   }) {
     const id = crypto.randomUUID();
     const now = Date.now();
-    
+
     const entry = {
       id,
       name: params.name,
@@ -67,28 +67,38 @@ export class GoalsRepository {
 
   async checkInGoal(goalId: string, localDate: number, amount: number = 1) {
     const now = Date.now();
-    
+
     await this.db.transaction(async (tx) => {
       // Upsert checkin
-      await tx.insert(schema.goalCheckins).values({
-        goalId,
-        localDate,
-        amount,
-        createdAt: now,
-        updatedAt: now,
-        rev: 1,
-      }).onConflictDoUpdate({
-        target: [schema.goalCheckins.goalId, schema.goalCheckins.localDate],
-        set: {
+      await tx
+        .insert(schema.goalCheckins)
+        .values({
+          goalId,
+          localDate,
           amount,
+          createdAt: now,
           updatedAt: now,
-          rev: sql`${schema.goalCheckins.rev} + 1`
-        }
-      });
+          rev: 1,
+        })
+        .onConflictDoUpdate({
+          target: [schema.goalCheckins.goalId, schema.goalCheckins.localDate],
+          set: {
+            amount,
+            updatedAt: now,
+            rev: sql`${schema.goalCheckins.rev} + 1`,
+          },
+        });
 
       if (this.onMutate) {
-        const checkinRow = await tx.select().from(schema.goalCheckins)
-          .where(and(eq(schema.goalCheckins.goalId, goalId), eq(schema.goalCheckins.localDate, localDate)))
+        const checkinRow = await tx
+          .select()
+          .from(schema.goalCheckins)
+          .where(
+            and(
+              eq(schema.goalCheckins.goalId, goalId),
+              eq(schema.goalCheckins.localDate, localDate),
+            ),
+          )
           .limit(1);
         if (checkinRow.length > 0) {
           const r = checkinRow[0];

@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from "react-native";
 import { COLORS } from "@chapter/ui-tokens";
+import { useState } from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export function AppLockScreen({ onUnlock }: { onUnlock: (pin: string) => Promise<boolean> }) {
   const [pin, setPin] = useState("");
@@ -8,7 +8,7 @@ export function AppLockScreen({ onUnlock }: { onUnlock: (pin: string) => Promise
 
   const handlePress = async (digit: string) => {
     if (error) setError(false);
-    
+
     const newPin = pin + digit;
     setPin(newPin);
 
@@ -31,12 +31,12 @@ export function AppLockScreen({ onUnlock }: { onUnlock: (pin: string) => Promise
       <Text style={styles.title}>App Locked</Text>
 
       <View style={styles.dotsContainer}>
-        {[0, 1, 2, 3].map(i => (
-          <View 
+        {[0, 1, 2, 3].map((i) => (
+          <View
             key={i}
             style={[
               styles.dot,
-              { backgroundColor: pin.length > i ? COLORS.light.primary : COLORS.light.surface2 }
+              { backgroundColor: pin.length > i ? COLORS.light.primary : COLORS.light.surface2 },
             ]}
           />
         ))}
@@ -47,26 +47,16 @@ export function AppLockScreen({ onUnlock }: { onUnlock: (pin: string) => Promise
       </View>
 
       <View style={styles.pad}>
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(d => (
-          <TouchableOpacity
-            key={d}
-            onPress={() => handlePress(d.toString())}
-            style={styles.key}
-          >
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => (
+          <TouchableOpacity key={d} onPress={() => handlePress(d.toString())} style={styles.key}>
             <Text style={styles.keyText}>{d}</Text>
           </TouchableOpacity>
         ))}
         <View style={styles.key} />
-        <TouchableOpacity
-          onPress={() => handlePress("0")}
-          style={styles.key}
-        >
+        <TouchableOpacity onPress={() => handlePress("0")} style={styles.key}>
           <Text style={styles.keyText}>0</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={handleBackspace}
-          style={styles.key}
-        >
+        <TouchableOpacity onPress={handleBackspace} style={styles.key}>
           <Text style={styles.keyText}>⌫</Text>
         </TouchableOpacity>
       </View>
@@ -122,5 +112,5 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_500Medium",
     fontSize: 28,
     color: COLORS.light.ink1,
-  }
+  },
 });

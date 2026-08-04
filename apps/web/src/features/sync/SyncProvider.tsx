@@ -1,6 +1,6 @@
-import { useEffect } from "react";
 import { SyncDaemon } from "@chapter/db";
 import { openWebDatabase } from "@chapter/db/drivers/web";
+import { useEffect } from "react";
 
 export function SyncProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -10,7 +10,7 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
     async function init() {
       const { db } = await openWebDatabase();
       daemon = new SyncDaemon(db);
-      
+
       // Initial sync
       daemon.sync();
 

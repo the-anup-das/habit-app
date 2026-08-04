@@ -1,12 +1,14 @@
-import { useState, useEffect, ReactNode } from "react";
+import { needsLock, type SecuritySettings } from "@chapter/core";
+import { type ReactNode, useEffect, useState } from "react";
 import { AppLockScreen } from "../../components/AppLockScreen";
-import { needsLock, SecuritySettings } from "@chapter/core";
 
 export async function hashPin(pin: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(pin);
   const hash = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+  return Array.from(new Uint8Array(hash))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 export function getSecuritySettings(): SecuritySettings {
@@ -14,7 +16,12 @@ export function getSecuritySettings(): SecuritySettings {
   const autoLock = localStorage.getItem("autoLockMinutes");
   return {
     pinHash,
-    autoLockMinutes: autoLock === "immediately" || autoLock === "never" ? autoLock : (autoLock ? parseInt(autoLock, 10) : "never")
+    autoLockMinutes:
+      autoLock === "immediately" || autoLock === "never"
+        ? autoLock
+        : autoLock
+          ? parseInt(autoLock, 10)
+          : "never",
   };
 }
 
@@ -58,9 +65,7 @@ export function SecurityProvider({ children }: { children: ReactNode }) {
   return (
     <>
       {locked && <AppLockScreen onUnlock={handleUnlock} />}
-      <div style={{ display: locked ? "none" : "block", height: "100%" }}>
-        {children}
-      </div>
+      <div style={{ display: locked ? "none" : "block", height: "100%" }}>{children}</div>
     </>
   );
 }

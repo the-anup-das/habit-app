@@ -1,9 +1,15 @@
-import { Stack } from "expo-router";
-import { useCallback } from "react";
-import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from "@expo-google-fonts/inter";
-import { View, Text } from "react-native";
 import { COLORS } from "@chapter/ui-tokens";
+import {
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+  useFonts,
+} from "@expo-google-fonts/inter";
+import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
+import { useCallback } from "react";
+import { Text, View } from "react-native";
 import { SecurityProvider } from "../src/features/security/SecurityProvider";
 import { SyncProvider } from "../src/features/sync/SyncProvider";
 
@@ -25,7 +31,14 @@ export default function Layout() {
 
   if (!fontsLoaded) {
     return (
-      <View style={{ flex: 1, backgroundColor: COLORS.light.background, justifyContent: "center", alignItems: "center" }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: COLORS.light.background,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
         <Text>Loading...</Text>
       </View>
     );
@@ -43,8 +56,14 @@ export default function Layout() {
             }}
           >
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="entry/new" options={{ presentation: "modal", title: "How are you?" }} />
-            <Stack.Screen name="goals/new" options={{ presentation: "modal", title: "Create Goal" }} />
+            <Stack.Screen
+              name="entry/new"
+              options={{ presentation: "modal", title: "How are you?" }}
+            />
+            <Stack.Screen
+              name="goals/new"
+              options={{ presentation: "modal", title: "Create Goal" }}
+            />
             <Stack.Screen name="settings/taxonomy" options={{ title: "Settings" }} />
           </Stack>
         </SyncProvider>

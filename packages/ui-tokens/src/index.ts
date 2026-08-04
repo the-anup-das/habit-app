@@ -53,7 +53,7 @@ export const MOOD_ON_DARK = "oklch(0.97 0.010 290)";
 export const MOOD_ON_LIGHT = "oklch(0.24 0.045 72)";
 
 export function moodColor(group: MoodGroup, scheme: "light" | "dark"): string {
-  return MOOD_TOKENS[group]![scheme];
+  return MOOD_TOKENS[group]?.[scheme];
 }
 
 export function moodOnColor(group: MoodGroup): string {
@@ -81,7 +81,7 @@ export const TYPOGRAPHY = {
     medium: "500",
     semibold: "600",
     bold: "700",
-  }
+  },
 } as const;
 
 export const SPACING = {
@@ -115,7 +115,7 @@ export const SHADOWS = {
 } as const;
 
 /**
- * We define an elegant, slightly tinted dark mode palette as default 
+ * We define an elegant, slightly tinted dark mode palette as default
  * to meet the "sleek dark modes" and "glassmorphism" requirement.
  */
 export const COLORS = {
@@ -140,5 +140,5 @@ export const COLORS = {
     ink3: "#a1a1aa",
     primary: "oklch(0.6 0.15 250)",
     glass: "rgba(24, 24, 27, 0.7)", // semi-transparent surface1
-  }
+  },
 } as const;

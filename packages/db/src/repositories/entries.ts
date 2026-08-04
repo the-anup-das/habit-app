@@ -1,4 +1,4 @@
-import { count, eq, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import * as schema from "../schema";
 
 type AnyDb = {
@@ -56,7 +56,7 @@ export interface UpdateEntryParams {
 export class EntriesRepository {
   constructor(
     private readonly db: AnyDb,
-    private readonly onMutate?: (tx: any, rowKey: string, rev: number, data: any) => Promise<void>
+    private readonly onMutate?: (tx: any, rowKey: string, rev: number, data: any) => Promise<void>,
   ) {}
 
   async createEntry(params: CreateEntryParams) {
@@ -123,14 +123,42 @@ export class EntriesRepository {
 
       // 5. Update dayStats
       await this.recomputeDayStats(tx, params.localDate);
-      
+
       // 6. Sync Queue
       if (this.onMutate) {
         await this.onMutate(tx, `entries:${id}`, 1, {
-          entry: { id, moodId: params.moodId, happenedAt: params.happenedAt, localDate: params.localDate, tzOffsetMinutes: params.tzOffsetMinutes, note: params.note ?? "", createdAt: now, updatedAt: now, rev: 1, deletedAt: null },
+          entry: {
+            id,
+            moodId: params.moodId,
+            happenedAt: params.happenedAt,
+            localDate: params.localDate,
+            tzOffsetMinutes: params.tzOffsetMinutes,
+            note: params.note ?? "",
+            createdAt: now,
+            updatedAt: now,
+            rev: 1,
+            deletedAt: null,
+          },
           activities: params.activityIds.map((activityId) => ({ entryId: id, activityId })),
-          scales: params.scales?.map((s) => ({ entryId: id, scaleId: s.scaleId, value: s.value })) || [],
-          media: params.media?.map((m, idx) => ({ id: crypto.randomUUID(), entryId: id, kind: m.kind, relPath: m.relPath, mime: m.mime, byteSize: m.byteSize, width: m.width, height: m.height, durationMs: m.durationMs, transcript: m.transcript, position: idx, createdAt: now, updatedAt: now, rev: 1 })) || []
+          scales:
+            params.scales?.map((s) => ({ entryId: id, scaleId: s.scaleId, value: s.value })) || [],
+          media:
+            params.media?.map((m, idx) => ({
+              id: crypto.randomUUID(),
+              entryId: id,
+              kind: m.kind,
+              relPath: m.relPath,
+              mime: m.mime,
+              byteSize: m.byteSize,
+              width: m.width,
+              height: m.height,
+              durationMs: m.durationMs,
+              transcript: m.transcript,
+              position: idx,
+              createdAt: now,
+              updatedAt: now,
+              rev: 1,
+            })) || [],
         });
       }
     });
@@ -216,14 +244,45 @@ export class EntriesRepository {
       if (oldEntry.localDate !== params.localDate) {
         await this.recomputeDayStats(tx, oldEntry.localDate);
       }
-      
+
       // 6. Sync Queue
       if (this.onMutate) {
         await this.onMutate(tx, `entries:${params.id}`, oldEntry.rev + 1, {
-          entry: { id: params.id, moodId: params.moodId, happenedAt: params.happenedAt, localDate: params.localDate, tzOffsetMinutes: params.tzOffsetMinutes, note: params.note ?? "", updatedAt: now, rev: oldEntry.rev + 1, deletedAt: null },
+          entry: {
+            id: params.id,
+            moodId: params.moodId,
+            happenedAt: params.happenedAt,
+            localDate: params.localDate,
+            tzOffsetMinutes: params.tzOffsetMinutes,
+            note: params.note ?? "",
+            updatedAt: now,
+            rev: oldEntry.rev + 1,
+            deletedAt: null,
+          },
           activities: params.activityIds.map((activityId) => ({ entryId: params.id, activityId })),
-          scales: params.scales?.map((s) => ({ entryId: params.id, scaleId: s.scaleId, value: s.value })) || [],
-          media: params.media?.map((m, idx) => ({ id: crypto.randomUUID(), entryId: params.id, kind: m.kind, relPath: m.relPath, mime: m.mime, byteSize: m.byteSize, width: m.width, height: m.height, durationMs: m.durationMs, transcript: m.transcript, position: idx, createdAt: now, updatedAt: now, rev: 1 })) || []
+          scales:
+            params.scales?.map((s) => ({
+              entryId: params.id,
+              scaleId: s.scaleId,
+              value: s.value,
+            })) || [],
+          media:
+            params.media?.map((m, idx) => ({
+              id: crypto.randomUUID(),
+              entryId: params.id,
+              kind: m.kind,
+              relPath: m.relPath,
+              mime: m.mime,
+              byteSize: m.byteSize,
+              width: m.width,
+              height: m.height,
+              durationMs: m.durationMs,
+              transcript: m.transcript,
+              position: idx,
+              createdAt: now,
+              updatedAt: now,
+              rev: 1,
+            })) || [],
         });
       }
     });
@@ -257,7 +316,7 @@ export class EntriesRepository {
           entry: { id, deletedAt: now, updatedAt: now, rev: oldEntry.rev + 1 },
           activities: [],
           scales: [],
-          media: []
+          media: [],
         });
       }
     });
@@ -279,17 +338,17 @@ export class EntriesRepository {
       },
       with: {
         mood: {
-          with: { group: true }
+          with: { group: true },
         },
         activities: {
-          with: { activity: true }
+          with: { activity: true },
         },
         scales: {
-          with: { scale: true }
+          with: { scale: true },
         },
         media: {
           orderBy: (fields: any, { asc }: any) => [asc(fields.position)],
-        }
+        },
       },
       orderBy: (fields: any, { desc }: any) => [desc(fields.localDate), desc(fields.happenedAt)],
     });

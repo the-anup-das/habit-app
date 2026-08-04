@@ -1,21 +1,31 @@
-import { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, Animated, Image, Alert } from "react-native";
-import { openNativeDatabase } from "@chapter/db/drivers/native";
-import { TaxonomyRepository, EntriesRepository } from "@chapter/db";
 import { CaptureUseCase } from "@chapter/core";
-import { router, useLocalSearchParams } from "expo-router";
+import { EntriesRepository, SyncQueue, TaxonomyRepository } from "@chapter/db";
+import { openNativeDatabase } from "@chapter/db/drivers/native";
 import { COLORS, moodColor, moodOnColor, RADII } from "@chapter/ui-tokens";
-import Slider from '@react-native-community/slider';
-import { SyncQueue } from "@chapter/db";
+import Slider from "@react-native-community/slider";
+import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
+import {
+  Alert,
+  Animated,
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 const syncQueue = new SyncQueue();
-import * as ImagePicker from 'expo-image-picker';
-import { Audio } from 'expo-av';
+
+import { Audio } from "expo-av";
+import * as ImagePicker from "expo-image-picker";
 import { NativeStorageProvider } from "../../src/lib/storage";
 
 const storage = new NativeStorageProvider();
 
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+const _AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export default function QuickEntry() {
   const { id } = useLocalSearchParams();
@@ -40,13 +50,13 @@ export default function QuickEntry() {
     async function load() {
       const { db } = await openNativeDatabase();
       const taxonomyRepo = new TaxonomyRepository(db);
-      
+
       const [mGroups, aData, enabledScales] = await Promise.all([
         taxonomyRepo.getMoodsWithGroups(),
         taxonomyRepo.getActivitiesWithGroups(),
         taxonomyRepo.getEnabledScales(),
       ]);
-      
+
       setMoodGroups(mGroups);
       setActivityGroups(aData.groups);
       setUngroupedActivities(aData.ungroupedActivities);
@@ -55,9 +65,9 @@ export default function QuickEntry() {
       if (entryId) {
         const existing = await db.query.entries.findFirst({
           where: (t: any, { eq }: any) => eq(t.id, entryId),
-          with: { activities: true }
+          with: { activities: true },
         });
-        
+
         if (existing) {
           setSelectedMood(existing.moodId);
           setNote(existing.note ?? "");
@@ -66,10 +76,10 @@ export default function QuickEntry() {
 
           if (existing.scales) {
             const vals: Record<string, number> = {};
-            existing.scales.forEach((s: any) => vals[s.scaleId] = s.value);
+            existing.scales.forEach((s: any) => (vals[s.scaleId] = s.value));
             setScaleValues(vals);
           }
-          
+
           if (existing.media) {
             setMedia(existing.media);
           }
@@ -92,24 +102,30 @@ export default function QuickEntry() {
     if (!selectedMood) return;
 
     const { db } = await openNativeDatabase();
-    
-    const entriesRepo = new EntriesRepository({
-      ...db,
-      query: db.query as any,
-      transaction: async (cb) => {
-         return cb(db);
-      }
-    } as any, syncQueue.enqueue.bind(syncQueue));
+
+    const entriesRepo = new EntriesRepository(
+      {
+        ...db,
+        query: db.query as any,
+        transaction: async (cb) => {
+          return cb(db);
+        },
+      } as any,
+      syncQueue.enqueue.bind(syncQueue),
+    );
 
     const capture = new CaptureUseCase({
       entriesRepo,
       clock: {
         now: () => Date.now(),
         getTimezoneOffset: () => new Date().getTimezoneOffset(),
-      }
+      },
     });
 
-    const scalesToSave = Object.entries(scaleValues).map(([scaleId, value]) => ({ scaleId, value }));
+    const scalesToSave = Object.entries(scaleValues).map(([scaleId, value]) => ({
+      scaleId,
+      value,
+    }));
 
     if (entryId) {
       await capture.updateQuickEntry({
@@ -139,20 +155,23 @@ export default function QuickEntry() {
     if (!entryId) return;
 
     const { db } = await openNativeDatabase();
-    const entriesRepo = new EntriesRepository({
-      ...db,
-      query: db.query as any,
-      transaction: async (cb) => {
-         return cb(db);
-      }
-    } as any, syncQueue.enqueue.bind(syncQueue));
+    const entriesRepo = new EntriesRepository(
+      {
+        ...db,
+        query: db.query as any,
+        transaction: async (cb) => {
+          return cb(db);
+        },
+      } as any,
+      syncQueue.enqueue.bind(syncQueue),
+    );
 
     const capture = new CaptureUseCase({
       entriesRepo,
       clock: {
         now: () => Date.now(),
         getTimezoneOffset: () => new Date().getTimezoneOffset(),
-      }
+      },
     });
 
     await capture.deleteEntry(entryId);
@@ -179,25 +198,30 @@ export default function QuickEntry() {
           )}
         </View>
 
-        {moodGroups.map(group => (
+        {moodGroups.map((group) => (
           <View key={group.id} style={styles.group}>
             <Text style={styles.groupTitle}>{group.nameKey}</Text>
             <View style={styles.chipRow}>
               {group.moods.map((mood: any) => {
                 const isSelected = selectedMood === mood.id;
                 return (
-                  <Pressable 
+                  <Pressable
                     key={mood.id}
                     style={[
-                      styles.chip, 
-                      isSelected && { backgroundColor: moodColor(group.score as any, "light") }
+                      styles.chip,
+                      isSelected && { backgroundColor: moodColor(group.score as any, "light") },
                     ]}
                     onPress={() => setSelectedMood(mood.id)}
                   >
-                    <Text style={[
-                      styles.chipText, 
-                      isSelected && { color: moodOnColor(group.score as any), fontFamily: "Inter_600SemiBold" }
-                    ]}>
+                    <Text
+                      style={[
+                        styles.chipText,
+                        isSelected && {
+                          color: moodOnColor(group.score as any),
+                          fontFamily: "Inter_600SemiBold",
+                        },
+                      ]}
+                    >
                       {mood.name}
                     </Text>
                   </Pressable>
@@ -208,14 +232,14 @@ export default function QuickEntry() {
         ))}
 
         <Text style={styles.sectionTitle}>Activities</Text>
-        {activityGroups.map(group => (
+        {activityGroups.map((group) => (
           <View key={group.id} style={styles.group}>
             <Text style={styles.groupTitle}>{group.name}</Text>
             <View style={styles.chipRow}>
               {group.activities.map((act: any) => {
                 const isSelected = selectedActivities.has(act.id);
                 return (
-                  <Pressable 
+                  <Pressable
                     key={act.id}
                     style={[styles.chip, isSelected && styles.chipSelected]}
                     onPress={() => toggleActivity(act.id)}
@@ -226,30 +250,40 @@ export default function QuickEntry() {
                   </Pressable>
                 );
               })}
-              <Pressable 
+              <Pressable
                 style={styles.addChip}
                 onPress={() => {
-                  Alert.prompt(
-                    "New Activity",
-                    "Enter activity name (with emoji):",
-                    [
-                      { text: "Cancel", style: "cancel" },
-                      {
-                        text: "Add",
-                        onPress: async (name) => {
-                          if (!name) return;
-                          const { db } = await openNativeDatabase();
-                          const taxonomyRepo = new TaxonomyRepository({ ...db, query: db.query as any, update: db.update, insert: db.insert, delete: db.delete, select: db.select } as any);
-                          const newId = await taxonomyRepo.createActivity({ name, groupId: group.id });
-                          
-                          // Optimistic update
-                          const newAct = { id: newId, name, groupId: group.id };
-                          setActivityGroups(prev => prev.map(g => g.id === group.id ? { ...g, activities: [...g.activities, newAct] } : g));
-                          toggleActivity(newId);
-                        }
-                      }
-                    ]
-                  );
+                  Alert.prompt("New Activity", "Enter activity name (with emoji):", [
+                    { text: "Cancel", style: "cancel" },
+                    {
+                      text: "Add",
+                      onPress: async (name) => {
+                        if (!name) return;
+                        const { db } = await openNativeDatabase();
+                        const taxonomyRepo = new TaxonomyRepository({
+                          ...db,
+                          query: db.query as any,
+                          update: db.update,
+                          insert: db.insert,
+                          delete: db.delete,
+                          select: db.select,
+                        } as any);
+                        const newId = await taxonomyRepo.createActivity({
+                          name,
+                          groupId: group.id,
+                        });
+
+                        // Optimistic update
+                        const newAct = { id: newId, name, groupId: group.id };
+                        setActivityGroups((prev) =>
+                          prev.map((g) =>
+                            g.id === group.id ? { ...g, activities: [...g.activities, newAct] } : g,
+                          ),
+                        );
+                        toggleActivity(newId);
+                      },
+                    },
+                  ]);
                 }}
               >
                 <Text style={styles.addChipText}>+</Text>
@@ -264,7 +298,7 @@ export default function QuickEntry() {
               {ungroupedActivities.map((act: any) => {
                 const isSelected = selectedActivities.has(act.id);
                 return (
-                  <Pressable 
+                  <Pressable
                     key={act.id}
                     style={[styles.chip, isSelected && styles.chipSelected]}
                     onPress={() => toggleActivity(act.id)}
@@ -282,21 +316,27 @@ export default function QuickEntry() {
         {scales.length > 0 && (
           <>
             <Text style={styles.sectionTitle}>Scales</Text>
-            {scales.map(scale => {
+            {scales.map((scale) => {
               const val = scaleValues[scale.id] ?? scale.minValue;
               return (
                 <View key={scale.id} style={styles.scaleCard}>
                   <View style={styles.scaleHeader}>
-                    <Text style={styles.scaleName}>{scale.iconId} {scale.name}</Text>
-                    <Text style={styles.scaleValue}>{val} {scale.unit}</Text>
+                    <Text style={styles.scaleName}>
+                      {scale.iconId} {scale.name}
+                    </Text>
+                    <Text style={styles.scaleValue}>
+                      {val} {scale.unit}
+                    </Text>
                   </View>
                   <Slider
-                    style={{width: '100%', height: 40}}
+                    style={{ width: "100%", height: 40 }}
                     minimumValue={scale.minValue}
                     maximumValue={scale.maxValue}
                     step={scale.step}
                     value={val}
-                    onValueChange={(val) => setScaleValues(prev => ({ ...prev, [scale.id]: val }))}
+                    onValueChange={(val) =>
+                      setScaleValues((prev) => ({ ...prev, [scale.id]: val }))
+                    }
                     minimumTrackTintColor={COLORS.light.primary}
                     maximumTrackTintColor={COLORS.light.surface3}
                     thumbTintColor={COLORS.light.primary}
@@ -313,31 +353,38 @@ export default function QuickEntry() {
 
         <Text style={styles.sectionTitle}>Photos & Audio</Text>
         <View style={styles.mediaButtons}>
-          <Pressable 
+          <Pressable
             style={styles.mediaButton}
             onPress={async () => {
               const result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ['images'],
+                mediaTypes: ["images"],
                 quality: 0.8,
               });
               if (!result.canceled) {
                 const asset = result.assets[0];
-                const relPath = await storage.saveMedia(asset.uri, "photo", asset.uri.split('.').pop() || "jpg");
-                setMedia(prev => [...prev, {
-                  kind: "photo",
-                  relPath,
-                  mime: asset.mimeType || "image/jpeg",
-                  byteSize: asset.fileSize || 0,
-                  preview: asset.uri,
-                }]);
+                const relPath = await storage.saveMedia(
+                  asset.uri,
+                  "photo",
+                  asset.uri.split(".").pop() || "jpg",
+                );
+                setMedia((prev) => [
+                  ...prev,
+                  {
+                    kind: "photo",
+                    relPath,
+                    mime: asset.mimeType || "image/jpeg",
+                    byteSize: asset.fileSize || 0,
+                    preview: asset.uri,
+                  },
+                ]);
               }
             }}
           >
             <Text style={styles.mediaButtonText}>+ Photo</Text>
           </Pressable>
 
-          <Pressable 
-            style={[styles.mediaButton, recording && { backgroundColor: '#ef4444' }]}
+          <Pressable
+            style={[styles.mediaButton, recording && { backgroundColor: "#ef4444" }]}
             onPress={async () => {
               if (recording) {
                 await recording.stopAndUnloadAsync();
@@ -345,26 +392,34 @@ export default function QuickEntry() {
                 setRecording(null);
                 if (uri) {
                   const relPath = await storage.saveMedia(uri, "audio", "m4a");
-                  setMedia(prev => [...prev, {
-                    kind: "audio",
-                    relPath,
-                    mime: "audio/m4a",
-                    byteSize: 0,
-                  }]);
+                  setMedia((prev) => [
+                    ...prev,
+                    {
+                      kind: "audio",
+                      relPath,
+                      mime: "audio/m4a",
+                      byteSize: 0,
+                    },
+                  ]);
                 }
               } else {
                 try {
                   await Audio.requestPermissionsAsync();
-                  await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
-                  const { recording: r } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
+                  await Audio.setAudioModeAsync({
+                    allowsRecordingIOS: true,
+                    playsInSilentModeIOS: true,
+                  });
+                  const { recording: r } = await Audio.Recording.createAsync(
+                    Audio.RecordingOptionsPresets.HIGH_QUALITY,
+                  );
                   setRecording(r);
-                } catch (err) {
+                } catch (_err) {
                   Alert.alert("Microphone access denied");
                 }
               }
             }}
           >
-            <Text style={[styles.mediaButtonText, recording && { color: 'white' }]}>
+            <Text style={[styles.mediaButtonText, recording && { color: "white" }]}>
               {recording ? "Stop Recording" : "🎙 Record"}
             </Text>
           </Pressable>
@@ -382,11 +437,11 @@ export default function QuickEntry() {
                     <Text>Audio</Text>
                   </View>
                 )}
-                <Pressable 
+                <Pressable
                   style={styles.mediaRemove}
-                  onPress={() => setMedia(prev => prev.filter((_, i) => i !== idx))}
+                  onPress={() => setMedia((prev) => prev.filter((_, i) => i !== idx))}
                 >
-                  <Text style={{color: 'white', fontWeight: 'bold'}}>×</Text>
+                  <Text style={{ color: "white", fontWeight: "bold" }}>×</Text>
                 </Pressable>
               </View>
             ))}
@@ -394,7 +449,7 @@ export default function QuickEntry() {
         )}
 
         <Text style={styles.sectionTitle}>Note</Text>
-        <TextInput 
+        <TextInput
           style={styles.textInput}
           multiline
           placeholder="What's on your mind?"
@@ -402,17 +457,19 @@ export default function QuickEntry() {
           value={note}
           onChangeText={setNote}
         />
-        
+
         <View style={{ height: 100 }} />
       </ScrollView>
 
       <View style={styles.footer}>
-        <Pressable 
-          style={[styles.saveButton, !selectedMood && styles.saveButtonDisabled]} 
+        <Pressable
+          style={[styles.saveButton, !selectedMood && styles.saveButtonDisabled]}
           onPress={handleSave}
           disabled={!selectedMood}
         >
-          <Text style={[styles.saveButtonText, !selectedMood && styles.saveButtonTextDisabled]}>Save Entry</Text>
+          <Text style={[styles.saveButtonText, !selectedMood && styles.saveButtonTextDisabled]}>
+            Save Entry
+          </Text>
         </Pressable>
       </View>
     </View>
@@ -510,7 +567,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.light.surface3,
     backgroundColor: COLORS.light.surface1,
-    borderRadius: parseInt(RADII["xl"], 10) || 16,
+    borderRadius: parseInt(RADII.xl, 10) || 16,
     padding: 16,
     minHeight: 150,
     textAlignVertical: "top",
@@ -582,7 +639,7 @@ const styles = StyleSheet.create({
     color: COLORS.light.ink3,
   },
   mediaButtons: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
     marginBottom: 16,
   },
@@ -598,13 +655,13 @@ const styles = StyleSheet.create({
     color: COLORS.light.ink1,
   },
   mediaPreviewContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 12,
     marginBottom: 16,
   },
   mediaPreviewItem: {
-    position: 'relative',
+    position: "relative",
     width: 80,
     height: 80,
   },
@@ -618,18 +675,18 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 12,
     backgroundColor: COLORS.light.surface2,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   mediaRemove: {
-    position: 'absolute',
+    position: "absolute",
     top: -8,
     right: -8,
-    backgroundColor: '#ef4444',
+    backgroundColor: "#ef4444",
     width: 24,
     height: 24,
     borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

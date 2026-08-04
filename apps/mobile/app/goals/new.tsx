@@ -1,12 +1,12 @@
-import { useState, useCallback } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
-import { openNativeDatabase } from "@chapter/db/drivers/native";
-import { GoalsRepository, TaxonomyRepository } from "@chapter/db";
 import { getToday } from "@chapter/core";
-import { SyncQueue } from "@chapter/db";
+import { GoalsRepository, SyncQueue, TaxonomyRepository } from "@chapter/db";
+import { openNativeDatabase } from "@chapter/db/drivers/native";
 import { router, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 const syncQueue = new SyncQueue();
+
 import { COLORS } from "@chapter/ui-tokens";
 
 export default function CreateGoalScreen() {
@@ -15,39 +15,46 @@ export default function CreateGoalScreen() {
   const [targetType, setTargetType] = useState<"daily" | "weekly" | "monthly">("daily");
   const [targetCount, setTargetCount] = useState("1");
   const [activityId, setActivityId] = useState<string>("manual");
-  
-  const [activities, setActivities] = useState<{id: string, name: string}[]>([]);
+
+  const [activities, setActivities] = useState<{ id: string; name: string }[]>([]);
 
   useFocusEffect(
     useCallback(() => {
       async function loadActivities() {
         const { db } = await openNativeDatabase();
-        const taxRepo = new TaxonomyRepository({ ...db, query: db.query as any, update: db.update, insert: db.insert, delete: db.delete, select: db.select } as any);
+        const taxRepo = new TaxonomyRepository({
+          ...db,
+          query: db.query as any,
+          update: db.update,
+          insert: db.insert,
+          delete: db.delete,
+          select: db.select,
+        } as any);
         const acts = await taxRepo.getActivitiesWithGroups();
-        const flat = acts.groups.flatMap(g => g.activities);
+        const flat = acts.groups.flatMap((g) => g.activities);
         setActivities(flat);
       }
       loadActivities();
-    }, [])
+    }, []),
   );
 
   const handleSave = async () => {
     if (!name) return;
-    
-    const count = parseInt(targetCount) || 1;
+
+    const count = parseInt(targetCount, 10) || 1;
 
     const { db } = await openNativeDatabase();
     const goalsRepo = new GoalsRepository(db, syncQueue.enqueue.bind(syncQueue));
-    
+
     await goalsRepo.createGoal({
       name,
       iconId: icon,
       targetType,
       targetCount: count,
       activityId: activityId === "manual" ? undefined : activityId,
-      startedOn: getToday()
+      startedOn: getToday(),
     });
-    
+
     router.back();
   };
 
@@ -63,11 +70,7 @@ export default function CreateGoalScreen() {
       />
 
       <Text style={styles.label}>Icon (Emoji)</Text>
-      <TextInput
-        style={styles.input}
-        value={icon}
-        onChangeText={setIcon}
-      />
+      <TextInput style={styles.input} value={icon} onChangeText={setIcon} />
 
       <Text style={styles.label}>Frequency</Text>
       <View style={styles.row}>
@@ -79,10 +82,10 @@ export default function CreateGoalScreen() {
         />
         <Text style={styles.timesText}>times</Text>
       </View>
-      
+
       <View style={styles.pillContainer}>
-        {["daily", "weekly", "monthly"].map(type => (
-          <TouchableOpacity 
+        {["daily", "weekly", "monthly"].map((type) => (
+          <TouchableOpacity
             key={type}
             style={[styles.pill, targetType === type && styles.pillActive]}
             onPress={() => setTargetType(type as any)}
@@ -96,24 +99,38 @@ export default function CreateGoalScreen() {
 
       <Text style={styles.label}>Tracking Method</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 32 }}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.activityPill, activityId === "manual" && styles.activityPillActive]}
           onPress={() => setActivityId("manual")}
         >
-          <Text style={[styles.activityPillText, activityId === "manual" && styles.activityPillTextActive]}>Manual Tap</Text>
+          <Text
+            style={[
+              styles.activityPillText,
+              activityId === "manual" && styles.activityPillTextActive,
+            ]}
+          >
+            Manual Tap
+          </Text>
         </TouchableOpacity>
-        {activities.map(a => (
-          <TouchableOpacity 
+        {activities.map((a) => (
+          <TouchableOpacity
             key={a.id}
             style={[styles.activityPill, activityId === a.id && styles.activityPillActive]}
             onPress={() => setActivityId(a.id)}
           >
-            <Text style={[styles.activityPillText, activityId === a.id && styles.activityPillTextActive]}>{a.name}</Text>
+            <Text
+              style={[
+                styles.activityPillText,
+                activityId === a.id && styles.activityPillTextActive,
+              ]}
+            >
+              {a.name}
+            </Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
 
-      <TouchableOpacity 
+      <TouchableOpacity
         style={[styles.saveButton, !name && styles.saveButtonDisabled]}
         onPress={handleSave}
         disabled={!name}
@@ -210,5 +227,5 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_600SemiBold",
     color: "#fff",
     fontSize: 16,
-  }
+  },
 });

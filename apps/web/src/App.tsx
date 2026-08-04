@@ -1,10 +1,10 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { QuickEntry } from "./features/capture/QuickEntry";
-import { Timeline } from "./features/timeline/Timeline";
-import { TaxonomySettings } from "./features/taxonomy/TaxonomySettings";
-import { StatsOverview } from "./features/stats/StatsOverview";
 import { GoalsList } from "./features/goals/GoalsList";
+import { StatsOverview } from "./features/stats/StatsOverview";
 import { SyncProvider } from "./features/sync/SyncProvider";
+import { TaxonomySettings } from "./features/taxonomy/TaxonomySettings";
+import { Timeline } from "./features/timeline/Timeline";
 
 const router = createBrowserRouter([
   {
@@ -26,7 +26,7 @@ const router = createBrowserRouter([
   {
     path: "/goals",
     element: <GoalsList />,
-  }
+  },
 ]);
 
 export function App() {

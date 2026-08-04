@@ -1,4 +1,4 @@
-import { sqliteTable, integer, text, blob } from "drizzle-orm/sqlite-core";
+import { blob, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const syncOps = sqliteTable("sync_ops", {
   localSeq: integer("local_seq", { mode: "number" }).primaryKey({ autoIncrement: true }),

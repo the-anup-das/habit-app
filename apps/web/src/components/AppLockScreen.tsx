@@ -6,7 +6,7 @@ export function AppLockScreen({ onUnlock }: { onUnlock: (pin: string) => Promise
 
   const handlePress = async (digit: string) => {
     if (error) setError(false);
-    
+
     const newPin = pin + digit;
     setPin(newPin);
 
@@ -25,40 +25,53 @@ export function AppLockScreen({ onUnlock }: { onUnlock: (pin: string) => Promise
   };
 
   return (
-    <div style={{
-      position: "fixed",
-      top: 0, left: 0, right: 0, bottom: 0,
-      backgroundColor: "var(--color-background)",
-      zIndex: 9999,
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: "2rem"
-    }}>
-      <h1 style={{ fontSize: "var(--font-size-2xl)", marginBottom: "2rem", color: "var(--color-ink-1)" }}>
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: "var(--color-background)",
+        zIndex: 9999,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "2rem",
+      }}
+    >
+      <h1
+        style={{
+          fontSize: "var(--font-size-2xl)",
+          marginBottom: "2rem",
+          color: "var(--color-ink-1)",
+        }}
+      >
         App Locked
       </h1>
 
       <div style={{ display: "flex", gap: "1rem", marginBottom: "3rem" }}>
-        {[0, 1, 2, 3].map(i => (
-          <div 
+        {[0, 1, 2, 3].map((i) => (
+          <div
             key={i}
             style={{
               width: "1.5rem",
               height: "1.5rem",
               borderRadius: "50%",
               backgroundColor: pin.length > i ? "var(--color-primary)" : "var(--color-surface-2)",
-              transition: "background-color 0.2s ease"
+              transition: "background-color 0.2s ease",
             }}
           />
         ))}
       </div>
 
-      {error && <p style={{ color: "#ef4444", marginTop: "-2rem", marginBottom: "2rem" }}>Incorrect PIN</p>}
+      {error && (
+        <p style={{ color: "#ef4444", marginTop: "-2rem", marginBottom: "2rem" }}>Incorrect PIN</p>
+      )}
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1.5rem" }}>
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(d => (
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => (
           <button
             key={d}
             onClick={() => handlePress(d.toString())}
@@ -71,7 +84,7 @@ export function AppLockScreen({ onUnlock }: { onUnlock: (pin: string) => Promise
               fontWeight: "500",
               border: "none",
               cursor: "pointer",
-              color: "var(--color-ink-1)"
+              color: "var(--color-ink-1)",
             }}
           >
             {d}
@@ -89,7 +102,7 @@ export function AppLockScreen({ onUnlock }: { onUnlock: (pin: string) => Promise
             fontWeight: "500",
             border: "none",
             cursor: "pointer",
-            color: "var(--color-ink-1)"
+            color: "var(--color-ink-1)",
           }}
         >
           0
@@ -108,7 +121,7 @@ export function AppLockScreen({ onUnlock }: { onUnlock: (pin: string) => Promise
             color: "var(--color-ink-3)",
             display: "flex",
             alignItems: "center",
-            justifyContent: "center"
+            justifyContent: "center",
           }}
         >
           ⌫
