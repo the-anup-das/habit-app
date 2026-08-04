@@ -33,3 +33,4 @@ Thumbs.db
 
 # Local Claude settings (machine-specific permissions)
 .claude/settings.local.json
+docs/
