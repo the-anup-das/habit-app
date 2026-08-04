@@ -53,7 +53,7 @@ export const MOOD_ON_DARK = "oklch(0.97 0.010 290)";
 export const MOOD_ON_LIGHT = "oklch(0.24 0.045 72)";
 
 export function moodColor(group: MoodGroup, scheme: "light" | "dark"): string {
-  return MOOD_TOKENS[group][scheme];
+  return MOOD_TOKENS[group]![scheme];
 }
 
 export function moodOnColor(group: MoodGroup): string {

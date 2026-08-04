@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { openWebDatabase } from "@chapter/db/drivers/web";
 import { GoalsRepository } from "@chapter/db";
-import { HabitEngine, getToday, SyncQueue } from "@chapter/core";
+import { HabitEngine, getToday } from "@chapter/core";
+import { SyncQueue } from "@chapter/db";
 import { CreateGoalDialog } from "./CreateGoalDialog";
 
 const syncQueue = new SyncQueue();

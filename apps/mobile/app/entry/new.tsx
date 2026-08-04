@@ -6,12 +6,12 @@ import { CaptureUseCase } from "@chapter/core";
 import { router, useLocalSearchParams } from "expo-router";
 import { COLORS, moodColor, moodOnColor, RADII } from "@chapter/ui-tokens";
 import Slider from '@react-native-community/slider';
-import { SyncQueue } from "@chapter/core";
+import { SyncQueue } from "@chapter/db";
 
 const syncQueue = new SyncQueue();
 import * as ImagePicker from 'expo-image-picker';
 import { Audio } from 'expo-av';
-import { NativeStorageProvider } from "@chapter/core";
+import { NativeStorageProvider } from "../../src/lib/storage";
 
 const storage = new NativeStorageProvider();
 

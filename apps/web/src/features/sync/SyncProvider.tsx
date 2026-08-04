@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { SyncDaemon } from "@chapter/core";
+import { SyncDaemon } from "@chapter/db";
 import { openWebDatabase } from "@chapter/db/drivers/web";
 
 export function SyncProvider({ children }: { children: React.ReactNode }) {

@@ -18,12 +18,12 @@ export function generateCsvExport(entries: PopulatedEntry[]): string {
     const dStr = e.localDate.toString();
     const date = `${dStr.slice(0, 4)}-${dStr.slice(4, 6)}-${dStr.slice(6, 8)}`;
     
-    // format time as HH:MM
-    const tStr = e.localTime.toString().padStart(4, "0");
+    const d = new Date(e.happenedAt);
+    const tStr = `${d.getHours().toString().padStart(2, "0")}${d.getMinutes().toString().padStart(2, "0")}`;
     const time = `${tStr.slice(0, 2)}:${tStr.slice(2, 4)}`;
 
     const moodName = e.mood.name;
-    const moodGroup = e.moodGroup.name;
+    const moodGroup = e.mood.groupId;
     const moodScore = e.mood.score.toString();
     
     const activities = e.activities.map(a => a.activity.name).join(" | ");

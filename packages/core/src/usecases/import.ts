@@ -39,7 +39,7 @@ export function parseLegacyCsv(csvString: string): ParsedImportData {
     return result;
   };
 
-  const headers = parseLine(lines[0]).map(h => h.trim().toLowerCase());
+  const headers = parseLine(lines[0] as string).map(h => h.trim().toLowerCase());
   
   const colDate = headers.indexOf("full_date");
   const colTime = headers.indexOf("time");
@@ -56,19 +56,19 @@ export function parseLegacyCsv(csvString: string): ParsedImportData {
   const uniqueActivities = new Set<string>();
 
   for (let i = 1; i < lines.length; i++) {
-    const row = parseLine(lines[i]);
+    const row = parseLine(lines[i] as string);
     if (row.length < headers.length) continue; // skip malformed rows
 
-    const full_date = row[colDate].trim();
-    const time = row[colTime].trim();
-    const mood = row[colMood].trim();
+    const full_date = (row[colDate] as string).trim();
+    const time = (row[colTime] as string).trim();
+    const mood = (row[colMood] as string).trim();
     const activitiesRaw = colActivities !== -1 ? row[colActivities] : "";
-    const note = colNote !== -1 ? row[colNote].trim() : "";
+    const note = colNote !== -1 ? (row[colNote] as string).trim() : "";
 
     if (!mood) continue;
 
     uniqueMoods.add(mood);
-    const activities = activitiesRaw.split("|").map(a => a.trim()).filter(a => a !== "");
+    const activities = (activitiesRaw as string).split("|").map(a => a.trim()).filter(a => a !== "");
     activities.forEach(a => uniqueActivities.add(a));
 
     entries.push({ full_date, time, mood, activities, note });

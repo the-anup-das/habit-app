@@ -3,6 +3,7 @@ export interface PopulatedEntry {
   id: string;
   localDate: number; // YYYYMMDD
   happenedAt: number;
+  note?: string;
   mood: {
     id: string;
     name: string;

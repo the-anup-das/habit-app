@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { openWebDatabase } from "@chapter/db/drivers/web";
 import { GoalsRepository, TaxonomyRepository } from "@chapter/db";
-import { getToday, SyncQueue } from "@chapter/core";
+import { getToday } from "@chapter/core";
+import { SyncQueue } from "@chapter/db";
 
 const syncQueue = new SyncQueue();
 

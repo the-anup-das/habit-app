@@ -4,7 +4,7 @@ import { openWebDatabase } from "@chapter/db/drivers/web";
 import { moodColor, moodOnColor } from "@chapter/ui-tokens";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { SyncQueue } from "@chapter/core";
+import { SyncQueue } from "@chapter/db";
 
 const syncQueue = new SyncQueue();
 

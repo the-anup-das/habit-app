@@ -15,10 +15,10 @@
   },
   "dependencies": {
     "d3-scale": "^4.0.2",
-    "d3-shape": "^3.2.0",
-    "libsodium-wrappers": "^0.8.4"
+    "d3-shape": "^3.2.0"
   },
   "devDependencies": {
-    "@types/libsodium-wrappers": "^0.8.2"
+    "@types/d3-scale": "^4.0.0",
+    "@types/d3-shape": "^3.0.0"
   }
 }

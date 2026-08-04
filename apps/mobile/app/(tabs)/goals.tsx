@@ -2,7 +2,8 @@ import { useState, useCallback } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from "react-native";
 import { openNativeDatabase } from "@chapter/db/drivers/native";
 import { GoalsRepository } from "@chapter/db";
-import { HabitEngine, getToday, SyncQueue } from "@chapter/core";
+import { HabitEngine, getToday } from "@chapter/core";
+import { SyncQueue } from "@chapter/db";
 import { useFocusEffect, router } from "expo-router";
 
 const syncQueue = new SyncQueue();

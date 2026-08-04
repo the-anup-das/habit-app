@@ -4,7 +4,7 @@ import { Link, useFocusEffect } from "expo-router";
 import { openNativeDatabase } from "@chapter/db/drivers/native";
 import { runMigrations } from "@chapter/db";
 import { COLORS, TYPOGRAPHY, RADII, SHADOWS } from "@chapter/ui-tokens";
-import { NativeStorageProvider } from "@chapter/core";
+import { NativeStorageProvider } from "../../src/lib/storage";
 import { Image } from "react-native";
 import { Audio } from "expo-av";
 
