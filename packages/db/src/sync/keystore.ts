@@ -1,4 +1,4 @@
-import { deriveMasterKey } from "./crypto.js";
+import { deriveMasterKey } from "./crypto";
 
 // A hardcoded mock key/salt for development testing until the unlock UI is built
 const MOCK_PASSPHRASE = "test-sync-passphrase";

@@ -1,6 +1,6 @@
 import { syncOps } from "@chapter/db";
-import { deriveRowKey, encryptXChaCha20Poly1305 } from "./crypto.js";
-import { getMasterKey } from "./keystore.js";
+import { deriveRowKey, encryptXChaCha20Poly1305 } from "./crypto";
+import { getMasterKey } from "./keystore";
 
 export class SyncQueue {
   async enqueue(tx: any, rowKey: string, rev: number, rowData: any) {
