@@ -2,6 +2,6 @@ module.exports = (api) => {
   api.cache(true);
   return {
     presets: ["babel-preset-expo"],
-    plugins: [require.resolve("./strip-import-meta.js")],
+    plugins: ["babel-plugin-transform-import-meta"],
   };
 };
