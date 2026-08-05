@@ -12,3 +12,4 @@ patchedDependencies:
   '@sqlite.org/sqlite-wasm': patches/@sqlite.org__sqlite-wasm.patch
   react-native: patches/react-native.patch
   libsodium: patches/libsodium.patch
+  expo: patches/expo.patch
