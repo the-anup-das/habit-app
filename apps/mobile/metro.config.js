@@ -15,8 +15,8 @@ config.resolver.nodeModulesPaths = [
   path.resolve(workspaceRoot, 'node_modules'),
 ];
 
-// Force Metro to resolve (sub)dependencies only from the `nodeModulesPaths`
-config.resolver.disableHierarchicalLookup = true;
+// Allow hierarchical lookup for pnpm virtual store resolution
+// config.resolver.disableHierarchicalLookup = true;
 
 // Support package exports (needed for subpath exports like @chapter/db/drivers/native)
 config.resolver.unstable_enablePackageExports = true;
