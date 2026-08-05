@@ -5,12 +5,18 @@ const projectRoot = __dirname;
 const workspaceRoot = path.resolve(projectRoot, '../..');
 
 const config = getDefaultConfig(projectRoot);
-const exclusionList = require('metro-config/src/defaults/exclusionList');
 
-config.resolver.blockList = exclusionList([
+// Extend the existing blockList with our custom exclusions
+const extraExclusions = [
   /.*\/packages\/db\/src\/drivers\/web.*/,
   /.*\/node_modules\/@sqlite\.org\/sqlite-wasm\/.*/,
-]);
+];
+
+// Ensure blockList is an array and append our extra exclusions
+config.resolver.blockList = [
+  ...(Array.isArray(config.resolver.blockList) ? config.resolver.blockList : (config.resolver.blockList ? [config.resolver.blockList] : [])),
+  ...extraExclusions
+];
 
 // Watch all files within the monorepo
 config.watchFolders = [workspaceRoot];
