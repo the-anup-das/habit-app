@@ -45,7 +45,8 @@ jobs:
 
       - name: Rename APK
         run: |
-          mv apps/mobile/android/app/build/outputs/apk/release/app-release-unsigned.apk chapter-app-release.apk
+          ls -la apps/mobile/android/app/build/outputs/apk/release/
+          mv apps/mobile/android/app/build/outputs/apk/release/*.apk chapter-app-release.apk
 
       - name: VirusTotal Scan
         uses: crazy-max/ghaction-virustotal@v4
