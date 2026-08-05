@@ -1,13 +1,16 @@
 diff --git a/android/build.gradle b/android/build.gradle
-index 190ac191dcbc6815f0900ea492a2b3cf1b60afa5..ed8df39e8a2376236a66b6ee0c657e374c87383b 100644
+index 190ac191dcbc6815f0900ea492a2b3cf1b60afa5..5a48fc93d900be51d41eb05ca2344f841aea2ae4 100644
 --- a/android/build.gradle
 +++ b/android/build.gradle
-@@ -43,7 +43,7 @@ buildscript {
+@@ -43,7 +43,10 @@ buildscript {
  }
  
  android {
 -  namespace "expo.core"
 +  namespace "expo.modules"
++  buildFeatures {
++    buildConfig = false
++  }
    defaultConfig {
      versionCode 1
      versionName "52.0.49"
