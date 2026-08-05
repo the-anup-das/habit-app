@@ -1,0 +1,106 @@
+diff --git a/dist/index.mjs b/dist/index.mjs
+index 6475875f8a7d5c1eee34d322ea3e3e91a97c7b1e..76b92accaf896030bd83326f79bf4c408f4927a6 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -206,7 +206,7 @@ globalThis.sqlite3Worker1Promiser = function callee(config = callee.defaultConfi
+ };
+ globalThis.sqlite3Worker1Promiser.defaultConfig = {
+ 	worker: function() {
+-		return new Worker(new URL("sqlite3-worker1.mjs", import.meta.url), { type: "module" });
++		return new Worker(new URL("sqlite3-worker1.mjs", ""), { type: "module" });
+ 	},
+ 	onerror: (...args) => console.error("sqlite3Worker1Promiser():", ...args)
+ };
+@@ -305,7 +305,7 @@ async function sqlite3InitModule(moduleArg = {}) {
+ 	var ENVIRONMENT_IS_WORKER = !!globalThis.WorkerGlobalScope;
+ 	globalThis.process?.versions?.node && globalThis.process?.type;
+ 	var thisProgram = "./this.program";
+-	var _scriptName = import.meta.url;
++	var _scriptName = "";
+ 	var scriptDirectory = "";
+ 	function locateFile(path) {
+ 		if (Module["locateFile"]) return Module["locateFile"](path, scriptDirectory);
+@@ -399,7 +399,7 @@ async function sqlite3InitModule(moduleArg = {}) {
+ 	var wasmBinaryFile;
+ 	function findWasmBinary() {
+ 		if (Module["locateFile"]) return locateFile("sqlite3.wasm");
+-		return new URL("sqlite3.wasm", import.meta.url).href;
++		return new URL("sqlite3.wasm", "").href;
+ 	}
+ 	function getBinarySync(file) {
+ 		if (file == wasmBinaryFile && wasmBinary) return new Uint8Array(wasmBinary);
+@@ -14273,7 +14273,7 @@ async function sqlite3InitModule(moduleArg = {}) {
+ 						};
+ 						const options = opfsUtil.options;
+ 						options.proxyUri + (options.proxyUri.indexOf("?") < 0 ? "?" : "&") + vfsName;
+-						const opfsAsyncProxyUrl = new URL("sqlite3-opfs-async-proxy.js", import.meta.url);
++						const opfsAsyncProxyUrl = new URL("sqlite3-opfs-async-proxy.js", "");
+ 						opfsAsyncProxyUrl.searchParams.set("vfs", vfsName);
+ 						const W = opfsVfs.worker = new Worker(opfsAsyncProxyUrl.toString());
+ 						let zombieTimer = setTimeout(() => {
+diff --git a/dist/node.mjs b/dist/node.mjs
+index 7cf03c7c6f260347538dbe5c50bb3d887eebac1e..c2a71c0b41afebc5704822adb8c76835b5b49e92 100644
+--- a/dist/node.mjs
++++ b/dist/node.mjs
+@@ -42,10 +42,10 @@ async function sqlite3InitModule(moduleArg = {}) {
+ 	if (ENVIRONMENT_IS_NODE) {
+ 		const { createRequire } = await import("node:module");
+ 		/** @suppress{duplicate} */
+-		var require = createRequire(import.meta.url);
++		var require = createRequire("");
+ 	}
+ 	var thisProgram = "./this.program";
+-	var _scriptName = import.meta.url;
++	var _scriptName = "";
+ 	var scriptDirectory = "";
+ 	function locateFile(path) {
+ 		if (Module["locateFile"]) return Module["locateFile"](path, scriptDirectory);
+@@ -141,7 +141,7 @@ async function sqlite3InitModule(moduleArg = {}) {
+ 	var wasmBinaryFile;
+ 	function findWasmBinary() {
+ 		if (Module["locateFile"]) return locateFile("sqlite3.wasm");
+-		return new URL("sqlite3.wasm", import.meta.url).href;
++		return new URL("sqlite3.wasm", "").href;
+ 	}
+ 	function getBinarySync(file) {
+ 		if (file == wasmBinaryFile && wasmBinary) return new Uint8Array(wasmBinary);
+diff --git a/dist/sqlite3-worker1.mjs b/dist/sqlite3-worker1.mjs
+index 4d0ec9e72da08ad6a0daa640a1d3caa6a86f181a..3581bb543fc17bc2e07aaccae17f5da8fa283fd9 100644
+--- a/dist/sqlite3-worker1.mjs
++++ b/dist/sqlite3-worker1.mjs
+@@ -90,7 +90,7 @@ async function sqlite3InitModule(moduleArg = {}) {
+ 		*/
+ 		Module["locateFile"] = function(path, prefix) {
+ 			if (this.emscriptenLocateFile instanceof Function) return this.emscriptenLocateFile(path, prefix);
+-			return new URL(path, import.meta.url).href;
++			return new URL(path, "").href;
+ 		}.bind(sIMS);
+ 		/**
+ 		Override Module.instantiateWasm().
+@@ -119,7 +119,7 @@ async function sqlite3InitModule(moduleArg = {}) {
+ 		}.bind(sIMS);
+ 	})(Module);
+ 	var thisProgram = "./this.program";
+-	var _scriptName = import.meta.url;
++	var _scriptName = "";
+ 	var scriptDirectory = "";
+ 	function locateFile(path) {
+ 		if (Module["locateFile"]) return Module["locateFile"](path, scriptDirectory);
+@@ -213,7 +213,7 @@ async function sqlite3InitModule(moduleArg = {}) {
+ 	var wasmBinaryFile;
+ 	function findWasmBinary() {
+ 		if (Module["locateFile"]) return locateFile("sqlite3.wasm");
+-		return new URL("sqlite3.wasm", import.meta.url).href;
++		return new URL("sqlite3.wasm", "").href;
+ 	}
+ 	function getBinarySync(file) {
+ 		if (file == wasmBinaryFile && wasmBinary) return new Uint8Array(wasmBinary);
+@@ -14087,7 +14087,7 @@ async function sqlite3InitModule(moduleArg = {}) {
+ 						};
+ 						const options = opfsUtil.options;
+ 						let proxyUri = options.proxyUri + (options.proxyUri.indexOf("?") < 0 ? "?" : "&") + "vfs=" + vfsName;
+-						const W = opfsVfs.worker = new Worker(new URL(proxyUri, import.meta.url));
++						const W = opfsVfs.worker = new Worker(new URL(proxyUri, ""));
+ 						let zombieTimer = setTimeout(() => {
+ 							if (void 0 === promiseWasRejected) promiseReject(/* @__PURE__ */ new Error("Timeout while waiting for OPFS async proxy worker."));
+ 						}, 4e3);
