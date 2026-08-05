@@ -1,16 +1,22 @@
-diff --git a/android/build.gradle b/android/build.gradle
-index 190ac191dcbc6815f0900ea492a2b3cf1b60afa5..5a48fc93d900be51d41eb05ca2344f841aea2ae4 100644
---- a/android/build.gradle
-+++ b/android/build.gradle
-@@ -43,7 +43,10 @@ buildscript {
- }
+diff --git a/android/src/main/java/expo/core/ExpoModulesPackage.kt b/android/src/main/java/expo/core/ExpoModulesPackage.kt
+new file mode 100644
+index 0000000000000000000000000000000000000000..95ac3233f40ad1e09534d2a1ad527402c04ba4d8
+--- /dev/null
++++ b/android/src/main/java/expo/core/ExpoModulesPackage.kt
+@@ -0,0 +1,3 @@
++package expo.core
++
++class ExpoModulesPackage : expo.modules.ExpoModulesPackage()
+diff --git a/android/src/main/java/expo/modules/ExpoModulesPackage.kt b/android/src/main/java/expo/modules/ExpoModulesPackage.kt
+index 533674e5cb2a2a0d32389ff992fe646ebb0e113f..4ab3a963bb6da3d4c4b13180cfa9a9c3cf42c489 100644
+--- a/android/src/main/java/expo/modules/ExpoModulesPackage.kt
++++ b/android/src/main/java/expo/modules/ExpoModulesPackage.kt
+@@ -13,7 +13,7 @@ import expo.modules.core.interfaces.Package
  
- android {
--  namespace "expo.core"
-+  namespace "expo.modules"
-+  buildFeatures {
-+    buildConfig = false
-+  }
-   defaultConfig {
-     versionCode 1
-     versionName "52.0.49"
+ import java.lang.Exception
+ 
+-class ExpoModulesPackage : ReactPackage {
++open class ExpoModulesPackage : ReactPackage {
+   val moduleRegistryAdapter = ModuleRegistryAdapter(packageList)
+ 
+   companion object {
