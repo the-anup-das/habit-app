@@ -45,6 +45,7 @@
     "react-native-svg": "15.8.0"
   },
   "devDependencies": {
+    "@react-native-community/cli": "^20.2.0",
     "@types/react": "~18.3.12",
     "typescript": "^5.3.3"
   }
