@@ -13,6 +13,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@babel/runtime": "^8.0.0",
     "@chapter/core": "workspace:*",
     "@chapter/db": "workspace:*",
     "@chapter/ui-tokens": "workspace:*",
