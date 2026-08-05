@@ -1,0 +1,944 @@
+diff --git a/src/private/fusebox/FuseboxSessionObserver.js b/src/private/fusebox/FuseboxSessionObserver.js
+index 498901a822113df508a6d9696c7275ae4e7bcad6..c5850b496709705a4ac380c1b8d0a0866cefeced 100644
+--- a/src/private/fusebox/FuseboxSessionObserver.js
++++ b/src/private/fusebox/FuseboxSessionObserver.js
+@@ -10,16 +10,16 @@
+  */
+ 
+ class FuseboxSessionObserver {
+-  #hasNativeSupport: boolean;
++  _hasNativeSupport: boolean;
+ 
+   constructor() {
+-    this.#hasNativeSupport = global.hasOwnProperty(
++    this._hasNativeSupport = global.hasOwnProperty(
+       '__DEBUGGER_SESSION_OBSERVER__',
+     );
+   }
+ 
+   hasActiveSession(): boolean {
+-    if (!this.#hasNativeSupport) {
++    if (!this._hasNativeSupport) {
+       return false;
+     }
+ 
+@@ -27,7 +27,7 @@ class FuseboxSessionObserver {
+   }
+ 
+   subscribe(callback: (status: boolean) => void): () => void {
+-    if (!this.#hasNativeSupport) {
++    if (!this._hasNativeSupport) {
+       return () => {};
+     }
+ 
+diff --git a/src/private/fusebox/setUpFuseboxReactDevToolsDispatcher.js b/src/private/fusebox/setUpFuseboxReactDevToolsDispatcher.js
+index 376b1d6fb8d9fb6aeb346f5159349434b88e2577..33510dc4715129a8c32bcff04c8978cbcb335e08 100644
+--- a/src/private/fusebox/setUpFuseboxReactDevToolsDispatcher.js
++++ b/src/private/fusebox/setUpFuseboxReactDevToolsDispatcher.js
+@@ -19,19 +19,19 @@ type JSONValue =
+ type DomainName = 'react-devtools';
+ 
+ class EventScope<T> {
+-  #listeners: Set<(T) => void> = new Set();
++  _listeners: Set<(T) => void> = new Set();
+ 
+   addEventListener(listener: T => void): void {
+-    this.#listeners.add(listener);
++    this._listeners.add(listener);
+   }
+ 
+   removeEventListener(listener: T => void): void {
+-    this.#listeners.delete(listener);
++    this._listeners.delete(listener);
+   }
+ 
+   emit(value: T): void {
+     // Assuming that listeners won't throw.
+-    for (const listener of this.#listeners) {
++    for (const listener of this._listeners) {
+       listener(value);
+     }
+   }
+@@ -63,7 +63,7 @@ export class Domain {
+ }
+ 
+ class FuseboxReactDevToolsDispatcher {
+-  static #domainNameToDomainMap: Map<DomainName, Domain> = new Map();
++  static _domainNameToDomainMap: Map<DomainName, Domain> = new Map();
+ 
+   // Referenced and initialized from Chrome DevTools frontend.
+   static BINDING_NAME: string = '__CHROME_DEVTOOLS_FRONTEND_BINDING__';
+@@ -73,7 +73,7 @@ class FuseboxReactDevToolsDispatcher {
+   static initializeDomain(domainName: DomainName): Domain {
+     const domain = new Domain(domainName);
+ 
+-    this.#domainNameToDomainMap.set(domainName, domain);
++    this._domainNameToDomainMap.set(domainName, domain);
+     this.onDomainInitialization.emit(domain);
+ 
+     return domain;
+@@ -81,7 +81,7 @@ class FuseboxReactDevToolsDispatcher {
+ 
+   // Should be private, referenced from Chrome DevTools frontend only.
+   static sendMessage(domainName: DomainName, message: string): void {
+-    const domain = this.#domainNameToDomainMap.get(domainName);
++    const domain = this._domainNameToDomainMap.get(domainName);
+     if (domain == null) {
+       throw new Error(
+         `Could not send message to ${domainName}: domain doesn't exist`,
+diff --git a/src/private/specs/components/ActivityIndicatorViewNativeComponent.js b/src/private/specs/components/ActivityIndicatorViewNativeComponent.js
+index b24ad41303f4434f14d774bde3b6d8521637f88c..5698c0e0553e0ea04d01c561e28e9ada91047ffd 100644
+--- a/src/private/specs/components/ActivityIndicatorViewNativeComponent.js
++++ b/src/private/specs/components/ActivityIndicatorViewNativeComponent.js
+@@ -21,21 +21,21 @@ type NativeProps = $ReadOnly<{|
+   /**
+    * Whether the indicator should hide when not animating (true by default).
+    *
+-   * See https://reactnative.dev/docs/activityindicator#hideswhenstopped-ios
++   * See https://reactnative.dev/docs/activityindicator_hideswhenstopped-ios
+    */
+   hidesWhenStopped?: WithDefault<boolean, true>,
+ 
+   /**
+    * Whether to show the indicator (true, the default) or hide it (false).
+    *
+-   * See https://reactnative.dev/docs/activityindicator#animating
++   * See https://reactnative.dev/docs/activityindicator_animating
+    */
+   animating?: WithDefault<boolean, true>,
+ 
+   /**
+    * The foreground color of the spinner (default is gray).
+    *
+-   * See https://reactnative.dev/docs/activityindicator#color
++   * See https://reactnative.dev/docs/activityindicator_color
+    */
+   color?: ?ColorValue,
+ 
+@@ -43,7 +43,7 @@ type NativeProps = $ReadOnly<{|
+    * Size of the indicator (default is 'small').
+    * Passing a number to the size prop is only supported on Android.
+    *
+-   * See https://reactnative.dev/docs/activityindicator#size
++   * See https://reactnative.dev/docs/activityindicator_size
+    */
+   size?: WithDefault<'small' | 'large', 'small'>,
+ |}>;
+diff --git a/src/private/specs/components/RCTModalHostViewNativeComponent.js b/src/private/specs/components/RCTModalHostViewNativeComponent.js
+index 86bf895d76752698107cd573b91a16e34f6a54c8..f5d3459d81cbb31958250709c7816adc2af22ea0 100644
+--- a/src/private/specs/components/RCTModalHostViewNativeComponent.js
++++ b/src/private/specs/components/RCTModalHostViewNativeComponent.js
+@@ -28,14 +28,14 @@ type NativeProps = $ReadOnly<{|
+   /**
+    * The `animationType` prop controls how the modal animates.
+    *
+-   * See https://reactnative.dev/docs/modal#animationtype
++   * See https://reactnative.dev/docs/modal_animationtype
+    */
+   animationType?: WithDefault<'none' | 'slide' | 'fade', 'none'>,
+ 
+   /**
+    * The `presentationStyle` prop controls how the modal appears.
+    *
+-   * See https://reactnative.dev/docs/modal#presentationstyle
++   * See https://reactnative.dev/docs/modal_presentationstyle
+    */
+   presentationStyle?: WithDefault<
+     'fullScreen' | 'pageSheet' | 'formSheet' | 'overFullScreen',
+@@ -46,7 +46,7 @@ type NativeProps = $ReadOnly<{|
+    * The `transparent` prop determines whether your modal will fill the
+    * entire view.
+    *
+-   * See https://reactnative.dev/docs/modal#transparent
++   * See https://reactnative.dev/docs/modal_transparent
+    */
+   transparent?: WithDefault<boolean, false>,
+ 
+@@ -54,7 +54,7 @@ type NativeProps = $ReadOnly<{|
+    * The `statusBarTranslucent` prop determines whether your modal should go under
+    * the system statusbar.
+    *
+-   * See https://reactnative.dev/docs/modal#statusBarTranslucent
++   * See https://reactnative.dev/docs/modal_statusBarTranslucent
+    */
+   statusBarTranslucent?: WithDefault<boolean, false>,
+ 
+@@ -62,7 +62,7 @@ type NativeProps = $ReadOnly<{|
+    * The `hardwareAccelerated` prop controls whether to force hardware
+    * acceleration for the underlying window.
+    *
+-   * See https://reactnative.dev/docs/modal#hardwareaccelerated
++   * See https://reactnative.dev/docs/modal_hardwareaccelerated
+    */
+   hardwareAccelerated?: WithDefault<boolean, false>,
+ 
+@@ -72,7 +72,7 @@ type NativeProps = $ReadOnly<{|
+    *
+    * This is required on Apple TV and Android.
+    *
+-   * See https://reactnative.dev/docs/modal#onrequestclose
++   * See https://reactnative.dev/docs/modal_onrequestclose
+    */
+   onRequestClose?: ?DirectEventHandler<null>,
+ 
+@@ -80,7 +80,7 @@ type NativeProps = $ReadOnly<{|
+    * The `onShow` prop allows passing a function that will be called once the
+    * modal has been shown.
+    *
+-   * See https://reactnative.dev/docs/modal#onshow
++   * See https://reactnative.dev/docs/modal_onshow
+    */
+   onShow?: ?DirectEventHandler<null>,
+ 
+@@ -88,14 +88,14 @@ type NativeProps = $ReadOnly<{|
+    * The `onDismiss` prop allows passing a function that will be called once
+    * the modal has been dismissed.
+    *
+-   * See https://reactnative.dev/docs/modal#ondismiss
++   * See https://reactnative.dev/docs/modal_ondismiss
+    */
+   onDismiss?: ?DirectEventHandler<null>,
+ 
+   /**
+    * The `visible` prop determines whether your modal is visible.
+    *
+-   * See https://reactnative.dev/docs/modal#visible
++   * See https://reactnative.dev/docs/modal_visible
+    */
+   visible?: WithDefault<boolean, false>,
+ 
+@@ -107,7 +107,7 @@ type NativeProps = $ReadOnly<{|
+   /**
+    * The `supportedOrientations` prop allows the modal to be rotated to any of the specified orientations.
+    *
+-   * See https://reactnative.dev/docs/modal#supportedorientations
++   * See https://reactnative.dev/docs/modal_supportedorientations
+    */
+   supportedOrientations?: WithDefault<
+     $ReadOnlyArray<
+@@ -123,7 +123,7 @@ type NativeProps = $ReadOnly<{|
+   /**
+    * The `onOrientationChange` callback is called when the orientation changes while the modal is being displayed.
+    *
+-   * See https://reactnative.dev/docs/modal#onorientationchange
++   * See https://reactnative.dev/docs/modal_onorientationchange
+    */
+   onOrientationChange?: ?DirectEventHandler<OrientationChangeEvent>,
+ 
+diff --git a/src/private/webapis/dom/geometry/DOMRectReadOnly.js b/src/private/webapis/dom/geometry/DOMRectReadOnly.js
+index 1c2d4a870778cecd80e947376874d7671d22bce9..ce5df6767b486a78409715a1fdf75d6c268ba075 100644
+--- a/src/private/webapis/dom/geometry/DOMRectReadOnly.js
++++ b/src/private/webapis/dom/geometry/DOMRectReadOnly.js
+@@ -33,10 +33,10 @@ function castToNumber(value: mixed): number {
+  * This is a (mostly) spec-compliant version of `DOMRectReadOnly` (https://developer.mozilla.org/en-US/docs/Web/API/DOMRectReadOnly).
+  */
+ export default class DOMRectReadOnly {
+-  #x: number;
+-  #y: number;
+-  #width: number;
+-  #height: number;
++  _x: number;
++  _y: number;
++  _width: number;
++  _height: number;
+ 
+   constructor(x: ?number, y: ?number, width: ?number, height: ?number) {
+     this.__setInternalX(x);
+@@ -49,36 +49,36 @@ export default class DOMRectReadOnly {
+    * The x coordinate of the `DOMRectReadOnly`'s origin.
+    */
+   get x(): number {
+-    return this.#x;
++    return this._x;
+   }
+ 
+   /**
+    * The y coordinate of the `DOMRectReadOnly`'s origin.
+    */
+   get y(): number {
+-    return this.#y;
++    return this._y;
+   }
+ 
+   /**
+    * The width of the `DOMRectReadOnly`.
+    */
+   get width(): number {
+-    return this.#width;
++    return this._width;
+   }
+ 
+   /**
+    * The height of the `DOMRectReadOnly`.
+    */
+   get height(): number {
+-    return this.#height;
++    return this._height;
+   }
+ 
+   /**
+    * Returns the top coordinate value of the `DOMRect` (has the same value as `y`, or `y + height` if `height` is negative).
+    */
+   get top(): number {
+-    const height = this.#height;
+-    const y = this.#y;
++    const height = this._height;
++    const y = this._y;
+ 
+     if (height < 0) {
+       return y + height;
+@@ -91,8 +91,8 @@ export default class DOMRectReadOnly {
+    * Returns the right coordinate value of the `DOMRect` (has the same value as ``x + width`, or `x` if `width` is negative).
+    */
+   get right(): number {
+-    const width = this.#width;
+-    const x = this.#x;
++    const width = this._width;
++    const x = this._x;
+ 
+     if (width < 0) {
+       return x;
+@@ -105,8 +105,8 @@ export default class DOMRectReadOnly {
+    * Returns the bottom coordinate value of the `DOMRect` (has the same value as `y + height`, or `y` if `height` is negative).
+    */
+   get bottom(): number {
+-    const height = this.#height;
+-    const y = this.#y;
++    const height = this._height;
++    const y = this._y;
+ 
+     if (height < 0) {
+       return y;
+@@ -119,8 +119,8 @@ export default class DOMRectReadOnly {
+    * Returns the left coordinate value of the `DOMRect` (has the same value as `x`, or `x + width` if `width` is negative).
+    */
+   get left(): number {
+-    const width = this.#width;
+-    const x = this.#x;
++    const width = this._width;
++    const x = this._x;
+ 
+     if (width < 0) {
+       return x + width;
+@@ -155,34 +155,34 @@ export default class DOMRectReadOnly {
+   }
+ 
+   __getInternalX(): number {
+-    return this.#x;
++    return this._x;
+   }
+ 
+   __getInternalY(): number {
+-    return this.#y;
++    return this._y;
+   }
+ 
+   __getInternalWidth(): number {
+-    return this.#width;
++    return this._width;
+   }
+ 
+   __getInternalHeight(): number {
+-    return this.#height;
++    return this._height;
+   }
+ 
+   __setInternalX(x: ?number) {
+-    this.#x = castToNumber(x);
++    this._x = castToNumber(x);
+   }
+ 
+   __setInternalY(y: ?number) {
+-    this.#y = castToNumber(y);
++    this._y = castToNumber(y);
+   }
+ 
+   __setInternalWidth(width: ?number) {
+-    this.#width = castToNumber(width);
++    this._width = castToNumber(width);
+   }
+ 
+   __setInternalHeight(height: ?number) {
+-    this.#height = castToNumber(height);
++    this._height = castToNumber(height);
+   }
+ }
+diff --git a/src/private/webapis/dom/nodes/ReactNativeElement.js b/src/private/webapis/dom/nodes/ReactNativeElement.js
+index f091f3555b7be5f74178eca2ee7f4ded2f9b55e2..91affdae817c87fb93f8cb3b82e38a5b53f7d567 100644
+--- a/src/private/webapis/dom/nodes/ReactNativeElement.js
++++ b/src/private/webapis/dom/nodes/ReactNativeElement.js
+@@ -44,7 +44,7 @@ export default class ReactNativeElement
+   __nativeTag: number;
+   __internalInstanceHandle: InternalInstanceHandle;
+ 
+-  #viewConfig: ViewConfig;
++  _viewConfig: ViewConfig;
+ 
+   constructor(
+     tag: number,
+@@ -55,7 +55,7 @@ export default class ReactNativeElement
+ 
+     this.__nativeTag = tag;
+     this.__internalInstanceHandle = internalInstanceHandle;
+-    this.#viewConfig = viewConfig;
++    this._viewConfig = viewConfig;
+   }
+ 
+   get offsetHeight(): number {
+@@ -172,12 +172,12 @@ export default class ReactNativeElement
+ 
+   setNativeProps(nativeProps: {...}): void {
+     if (__DEV__) {
+-      warnForStyleProps(nativeProps, this.#viewConfig.validAttributes);
++      warnForStyleProps(nativeProps, this._viewConfig.validAttributes);
+     }
+ 
+     const updatePayload = createAttributePayload(
+       nativeProps,
+-      this.#viewConfig.validAttributes,
++      this._viewConfig.validAttributes,
+     );
+ 
+     const node = getShadowNode(this);
+diff --git a/src/private/webapis/dom/nodes/ReadOnlyText.js b/src/private/webapis/dom/nodes/ReadOnlyText.js
+index 91131f7298b552acfb73b1ff0f75520eff3feb65..992e212c655b6d7ab44968f2d850094204026d63 100644
+--- a/src/private/webapis/dom/nodes/ReadOnlyText.js
++++ b/src/private/webapis/dom/nodes/ReadOnlyText.js
+@@ -18,7 +18,7 @@ export default class ReadOnlyText extends ReadOnlyCharacterData {
+    * @override
+    */
+   get nodeName(): string {
+-    return '#text';
++    return '_text';
+   }
+ 
+   /**
+diff --git a/src/private/webapis/dom/oldstylecollections/DOMRectList.js b/src/private/webapis/dom/oldstylecollections/DOMRectList.js
+index a95458f91201da46c3fff99afc1a26c994de749f..5705bcf4c0e09cf62dcc3919c860661fa5066ebf 100644
+--- a/src/private/webapis/dom/oldstylecollections/DOMRectList.js
++++ b/src/private/webapis/dom/oldstylecollections/DOMRectList.js
+@@ -20,7 +20,7 @@ import {createValueIterator} from './ArrayLikeUtils';
+ 
+ // $FlowIssue[prop-missing] Flow doesn't understand [Symbol.iterator]() {} and thinks this class doesn't implement the Iterable interface.
+ export default class DOMRectList implements Iterable<DOMRectReadOnly> {
+-  #length: number;
++  _length: number;
+ 
+   /**
+    * Use `createDOMRectList` to create instances of this class.
+@@ -38,15 +38,15 @@ export default class DOMRectList implements Iterable<DOMRectReadOnly> {
+       });
+     }
+ 
+-    this.#length = elements.length;
++    this._length = elements.length;
+   }
+ 
+   get length(): number {
+-    return this.#length;
++    return this._length;
+   }
+ 
+   item(index: number): DOMRectReadOnly | null {
+-    if (index < 0 || index >= this.#length) {
++    if (index < 0 || index >= this._length) {
+       return null;
+     }
+ 
+diff --git a/src/private/webapis/dom/oldstylecollections/HTMLCollection.js b/src/private/webapis/dom/oldstylecollections/HTMLCollection.js
+index 9cf4b2dcaeebea217586d7f6b68b2414d7f3cc0a..18cbd0af9e52b98c4a2ecdfe1a06385aeb720e32 100644
+--- a/src/private/webapis/dom/oldstylecollections/HTMLCollection.js
++++ b/src/private/webapis/dom/oldstylecollections/HTMLCollection.js
+@@ -19,7 +19,7 @@ import {createValueIterator} from './ArrayLikeUtils';
+ 
+ // $FlowIssue[prop-missing] Flow doesn't understand [Symbol.iterator]() {} and thinks this class doesn't implement the Iterable<T> interface.
+ export default class HTMLCollection<T> implements Iterable<T>, ArrayLike<T> {
+-  #length: number;
++  _length: number;
+ 
+   /**
+    * Use `createHTMLCollection` to create instances of this class.
+@@ -37,15 +37,15 @@ export default class HTMLCollection<T> implements Iterable<T>, ArrayLike<T> {
+       });
+     }
+ 
+-    this.#length = elements.length;
++    this._length = elements.length;
+   }
+ 
+   get length(): number {
+-    return this.#length;
++    return this._length;
+   }
+ 
+   item(index: number): T | null {
+-    if (index < 0 || index >= this.#length) {
++    if (index < 0 || index >= this._length) {
+       return null;
+     }
+ 
+diff --git a/src/private/webapis/dom/oldstylecollections/NodeList.js b/src/private/webapis/dom/oldstylecollections/NodeList.js
+index 2d957f24f15360c7c670856982ac85f0e244b47a..592919e46806114928344d643f33c58d1100bc81 100644
+--- a/src/private/webapis/dom/oldstylecollections/NodeList.js
++++ b/src/private/webapis/dom/oldstylecollections/NodeList.js
+@@ -23,7 +23,7 @@ import {
+ 
+ // $FlowIssue[prop-missing] Flow doesn't understand [Symbol.iterator]() {} and thinks this class doesn't implement the Iterable<T> interface.
+ export default class NodeList<T> implements Iterable<T>, ArrayLike<T> {
+-  #length: number;
++  _length: number;
+ 
+   /**
+    * Use `createNodeList` to create instances of this class.
+@@ -38,15 +38,15 @@ export default class NodeList<T> implements Iterable<T>, ArrayLike<T> {
+         writable: false,
+       });
+     }
+-    this.#length = elements.length;
++    this._length = elements.length;
+   }
+ 
+   get length(): number {
+-    return this.#length;
++    return this._length;
+   }
+ 
+   item(index: number): T | null {
+-    if (index < 0 || index >= this.#length) {
++    if (index < 0 || index >= this._length) {
+       return null;
+     }
+ 
+@@ -70,7 +70,7 @@ export default class NodeList<T> implements Iterable<T>, ArrayLike<T> {
+     // eslint-disable-next-line consistent-this
+     const arrayLike: ArrayLike<T> = this;
+ 
+-    for (let index = 0; index < this.#length; index++) {
++    for (let index = 0; index < this._length; index++) {
+       if (thisArg == null) {
+         callbackFn(arrayLike[index], index, this);
+       } else {
+diff --git a/src/private/webapis/performance/EventTiming.js b/src/private/webapis/performance/EventTiming.js
+index 110689a0601187329088efbfdcb25dc88590e86a..5d987e12e66cb30c4df4e9d6cdff6005a481bc4d 100644
+--- a/src/private/webapis/performance/EventTiming.js
++++ b/src/private/webapis/performance/EventTiming.js
+@@ -28,9 +28,9 @@ export type PerformanceEventTimingJSON = {
+ };
+ 
+ export class PerformanceEventTiming extends PerformanceEntry {
+-  #processingStart: DOMHighResTimeStamp;
+-  #processingEnd: DOMHighResTimeStamp;
+-  #interactionId: number;
++  _processingStart: DOMHighResTimeStamp;
++  _processingEnd: DOMHighResTimeStamp;
++  _interactionId: number;
+ 
+   constructor(init: {
+     name: string,
+@@ -46,29 +46,29 @@ export class PerformanceEventTiming extends PerformanceEntry {
+       startTime: init.startTime ?? 0,
+       duration: init.duration ?? 0,
+     });
+-    this.#processingStart = init.processingStart ?? 0;
+-    this.#processingEnd = init.processingEnd ?? 0;
+-    this.#interactionId = init.interactionId ?? 0;
++    this._processingStart = init.processingStart ?? 0;
++    this._processingEnd = init.processingEnd ?? 0;
++    this._interactionId = init.interactionId ?? 0;
+   }
+ 
+   get processingStart(): DOMHighResTimeStamp {
+-    return this.#processingStart;
++    return this._processingStart;
+   }
+ 
+   get processingEnd(): DOMHighResTimeStamp {
+-    return this.#processingEnd;
++    return this._processingEnd;
+   }
+ 
+   get interactionId(): number {
+-    return this.#interactionId;
++    return this._interactionId;
+   }
+ 
+   toJSON(): PerformanceEventTimingJSON {
+     return {
+       ...super.toJSON(),
+-      processingStart: this.#processingStart,
+-      processingEnd: this.#processingEnd,
+-      interactionId: this.#interactionId,
++      processingStart: this._processingStart,
++      processingEnd: this._processingEnd,
++      interactionId: this._interactionId,
+     };
+   }
+ }
+@@ -107,7 +107,7 @@ function getCachedEventCounts(): Map<string, number> {
+ /**
+  * Implementation of the EventCounts Web Performance API
+  * corresponding to the standard in
+- * https://www.w3.org/TR/event-timing/#eventcounts
++ * https://www.w3.org/TR/event-timing/_eventcounts
+  */
+ export class EventCounts {
+   get size(): number {
+diff --git a/src/private/webapis/performance/MemoryInfo.js b/src/private/webapis/performance/MemoryInfo.js
+index d597a824fabe3f0c25d7a51b8901bbe3ca4073b8..bee65b31c6d91ac3d9f540c1f97db8f51c659ea7 100644
+--- a/src/private/webapis/performance/MemoryInfo.js
++++ b/src/private/webapis/performance/MemoryInfo.js
+@@ -19,15 +19,15 @@ type MemoryInfoLike = {
+ 
+ // Read-only object with JS memory information. This is returned by the performance.memory API.
+ export default class MemoryInfo {
+-  #jsHeapSizeLimit: ?number;
+-  #totalJSHeapSize: ?number;
+-  #usedJSHeapSize: ?number;
++  _jsHeapSizeLimit: ?number;
++  _totalJSHeapSize: ?number;
++  _usedJSHeapSize: ?number;
+ 
+   constructor(memoryInfo: ?MemoryInfoLike) {
+     if (memoryInfo != null) {
+-      this.#jsHeapSizeLimit = memoryInfo.jsHeapSizeLimit;
+-      this.#totalJSHeapSize = memoryInfo.totalJSHeapSize;
+-      this.#usedJSHeapSize = memoryInfo.usedJSHeapSize;
++      this._jsHeapSizeLimit = memoryInfo.jsHeapSizeLimit;
++      this._totalJSHeapSize = memoryInfo.totalJSHeapSize;
++      this._usedJSHeapSize = memoryInfo.usedJSHeapSize;
+     }
+   }
+ 
+@@ -35,20 +35,20 @@ export default class MemoryInfo {
+    * The maximum size of the heap, in bytes, that is available to the context
+    */
+   get jsHeapSizeLimit(): ?number {
+-    return this.#jsHeapSizeLimit;
++    return this._jsHeapSizeLimit;
+   }
+ 
+   /**
+    * The total allocated heap size, in bytes
+    */
+   get totalJSHeapSize(): ?number {
+-    return this.#totalJSHeapSize;
++    return this._totalJSHeapSize;
+   }
+ 
+   /**
+    * The currently active segment of JS heap, in bytes.
+    */
+   get usedJSHeapSize(): ?number {
+-    return this.#usedJSHeapSize;
++    return this._usedJSHeapSize;
+   }
+ }
+diff --git a/src/private/webapis/performance/Performance.js b/src/private/webapis/performance/Performance.js
+index 5861d3582803b85c848fbae3808eb8b828471df3..ed6572a853cdb50e810d514f62e468ac395772cc 100644
+--- a/src/private/webapis/performance/Performance.js
++++ b/src/private/webapis/performance/Performance.js
+@@ -68,7 +68,7 @@ export type PerformanceMeasureOptions = {
+ /**
+  * Partial implementation of the Performance interface for RN,
+  * corresponding to the standard in
+- * https://www.w3.org/TR/user-timing/#extensions-performance-interface
++ * https://www.w3.org/TR/user-timing/_extensions-performance-interface
+  */
+ export default class Performance {
+   eventCounts: EventCounts = new EventCounts();
+@@ -249,7 +249,7 @@ export default class Performance {
+   /**
+    * An extension that allows to get back to JS all currently logged marks/measures
+    * (in our case, be it from JS or native), see
+-   * https://www.w3.org/TR/performance-timeline/#extensions-to-the-performance-interface
++   * https://www.w3.org/TR/performance-timeline/_extensions-to-the-performance-interface
+    */
+   getEntries(): PerformanceEntryList {
+     if (!NativePerformanceObserver?.getEntries) {
+diff --git a/src/private/webapis/performance/PerformanceEntry.js b/src/private/webapis/performance/PerformanceEntry.js
+index 4eca722984778275a1b0b5ee418e61cd64298dea..e620fbaf1fb861d9842535325e25b54bc61288f4 100644
+--- a/src/private/webapis/performance/PerformanceEntry.js
++++ b/src/private/webapis/performance/PerformanceEntry.js
+@@ -27,10 +27,10 @@ export const ALWAYS_LOGGED_ENTRY_TYPES: $ReadOnlyArray<PerformanceEntryType> = [
+ ];
+ 
+ export class PerformanceEntry {
+-  #name: string;
+-  #entryType: PerformanceEntryType;
+-  #startTime: DOMHighResTimeStamp;
+-  #duration: DOMHighResTimeStamp;
++  _name: string;
++  _entryType: PerformanceEntryType;
++  _startTime: DOMHighResTimeStamp;
++  _duration: DOMHighResTimeStamp;
+ 
+   constructor(init: {
+     name: string,
+@@ -38,34 +38,34 @@ export class PerformanceEntry {
+     startTime: DOMHighResTimeStamp,
+     duration: DOMHighResTimeStamp,
+   }) {
+-    this.#name = init.name;
+-    this.#entryType = init.entryType;
+-    this.#startTime = init.startTime;
+-    this.#duration = init.duration;
++    this._name = init.name;
++    this._entryType = init.entryType;
++    this._startTime = init.startTime;
++    this._duration = init.duration;
+   }
+ 
+   get name(): string {
+-    return this.#name;
++    return this._name;
+   }
+ 
+   get entryType(): PerformanceEntryType {
+-    return this.#entryType;
++    return this._entryType;
+   }
+ 
+   get startTime(): DOMHighResTimeStamp {
+-    return this.#startTime;
++    return this._startTime;
+   }
+ 
+   get duration(): DOMHighResTimeStamp {
+-    return this.#duration;
++    return this._duration;
+   }
+ 
+   toJSON(): PerformanceEntryJSON {
+     return {
+-      name: this.#name,
+-      entryType: this.#entryType,
+-      startTime: this.#startTime,
+-      duration: this.#duration,
++      name: this._name,
++      entryType: this._entryType,
++      startTime: this._startTime,
++      duration: this._duration,
+     };
+   }
+ }
+diff --git a/src/private/webapis/performance/PerformanceObserver.js b/src/private/webapis/performance/PerformanceObserver.js
+index 4f1d90f080ffa09a40be89f2f2a3a2f3d47d025f..6cfd43b4d609a5b7b249ef215ce5e1c1819b68b6 100644
+--- a/src/private/webapis/performance/PerformanceObserver.js
++++ b/src/private/webapis/performance/PerformanceObserver.js
+@@ -28,18 +28,18 @@ export type PerformanceEntryList = $ReadOnlyArray<PerformanceEntry>;
+ export {PerformanceEntry} from './PerformanceEntry';
+ 
+ export class PerformanceObserverEntryList {
+-  #entries: PerformanceEntryList;
++  _entries: PerformanceEntryList;
+ 
+   constructor(entries: PerformanceEntryList) {
+-    this.#entries = entries;
++    this._entries = entries;
+   }
+ 
+   getEntries(): PerformanceEntryList {
+-    return this.#entries;
++    return this._entries;
+   }
+ 
+   getEntriesByType(type: PerformanceEntryType): PerformanceEntryList {
+-    return this.#entries.filter(entry => entry.entryType === type);
++    return this._entries.filter(entry => entry.entryType === type);
+   }
+ 
+   getEntriesByName(
+@@ -47,9 +47,9 @@ export class PerformanceObserverEntryList {
+     type?: PerformanceEntryType,
+   ): PerformanceEntryList {
+     if (type === undefined) {
+-      return this.#entries.filter(entry => entry.name === name);
++      return this._entries.filter(entry => entry.name === name);
+     } else {
+-      return this.#entries.filter(
++      return this._entries.filter(
+         entry => entry.name === name && entry.entryType === type,
+       );
+     }
+@@ -175,11 +175,11 @@ function getSupportedPerformanceEntryTypes(): $ReadOnlyArray<PerformanceEntryTyp
+  * observer.observe({ type: "event" });
+  */
+ export class PerformanceObserver {
+-  #callback: PerformanceObserverCallback;
+-  #type: 'single' | 'multiple' | void;
++  _callback: PerformanceObserverCallback;
++  _type: 'single' | 'multiple' | void;
+ 
+   constructor(callback: PerformanceObserverCallback) {
+-    this.#callback = callback;
++    this._callback = callback;
+   }
+ 
+   observe(options: PerformanceObserverInit): void {
+@@ -188,15 +188,15 @@ export class PerformanceObserver {
+       return;
+     }
+ 
+-    this.#validateObserveOptions(options);
++    this._validateObserveOptions(options);
+ 
+     let requestedEntryTypes;
+ 
+     if (options.entryTypes) {
+-      this.#type = 'multiple';
++      this._type = 'multiple';
+       requestedEntryTypes = new Set(options.entryTypes);
+     } else {
+-      this.#type = 'single';
++      this._type = 'single';
+       requestedEntryTypes = new Set([options.type]);
+     }
+ 
+@@ -213,7 +213,7 @@ export class PerformanceObserver {
+     }
+ 
+     registeredObservers.set(this, {
+-      callback: this.#callback,
++      callback: this._callback,
+       durationThreshold:
+         options.type === 'event' ? options.durationThreshold : undefined,
+       entryTypes: nextEntryTypes,
+@@ -282,7 +282,7 @@ export class PerformanceObserver {
+     applyDurationThresholds();
+   }
+ 
+-  #validateObserveOptions(options: PerformanceObserverInit): void {
++  _validateObserveOptions(options: PerformanceObserverInit): void {
+     const {type, entryTypes, durationThreshold} = options;
+ 
+     if (!type && !entryTypes) {
+@@ -297,13 +297,13 @@ export class PerformanceObserver {
+       );
+     }
+ 
+-    if (this.#type === 'multiple' && type) {
++    if (this._type === 'multiple' && type) {
+       throw new Error(
+         "Failed to execute 'observe' on 'PerformanceObserver': This observer has performed observe({entryTypes:...}, therefore it cannot perform observe({type:...})",
+       );
+     }
+ 
+-    if (this.#type === 'single' && entryTypes) {
++    if (this._type === 'single' && entryTypes) {
+       throw new Error(
+         "Failed to execute 'observe' on 'PerformanceObserver': This PerformanceObserver has performed observe({type:...}, therefore it cannot perform observe({entryTypes:...})",
+       );
+diff --git a/src/private/webapis/performance/ReactNativeStartupTiming.js b/src/private/webapis/performance/ReactNativeStartupTiming.js
+index 80f53502cbee7164912ae7569e440337a8ca0fc9..9c6c2cc9a63a45a274fdca24b366f33cb0d0ba50 100644
+--- a/src/private/webapis/performance/ReactNativeStartupTiming.js
++++ b/src/private/webapis/performance/ReactNativeStartupTiming.js
+@@ -27,22 +27,22 @@ export default class ReactNativeStartupTiming {
+   // We do NOT match web spect here for two reasons:
+   // 1. The `ReactNativeStartupTiming` is non-standard API
+   // 2. The timing information is relative to the time origin, which means `0` has valid meaning
+-  #startTime: ?number;
+-  #endTime: ?number;
+-  #initializeRuntimeStart: ?number;
+-  #initializeRuntimeEnd: ?number;
+-  #executeJavaScriptBundleEntryPointStart: ?number;
+-  #executeJavaScriptBundleEntryPointEnd: ?number;
++  _startTime: ?number;
++  _endTime: ?number;
++  _initializeRuntimeStart: ?number;
++  _initializeRuntimeEnd: ?number;
++  _executeJavaScriptBundleEntryPointStart: ?number;
++  _executeJavaScriptBundleEntryPointEnd: ?number;
+ 
+   constructor(startUpTiming: ?ReactNativeStartupTimingLike) {
+     if (startUpTiming != null) {
+-      this.#startTime = startUpTiming.startTime;
+-      this.#endTime = startUpTiming.endTime;
+-      this.#initializeRuntimeStart = startUpTiming.initializeRuntimeStart;
+-      this.#initializeRuntimeEnd = startUpTiming.initializeRuntimeEnd;
+-      this.#executeJavaScriptBundleEntryPointStart =
++      this._startTime = startUpTiming.startTime;
++      this._endTime = startUpTiming.endTime;
++      this._initializeRuntimeStart = startUpTiming.initializeRuntimeStart;
++      this._initializeRuntimeEnd = startUpTiming.initializeRuntimeEnd;
++      this._executeJavaScriptBundleEntryPointStart =
+         startUpTiming.executeJavaScriptBundleEntryPointStart;
+-      this.#executeJavaScriptBundleEntryPointEnd =
++      this._executeJavaScriptBundleEntryPointEnd =
+         startUpTiming.executeJavaScriptBundleEntryPointEnd;
+     }
+   }
+@@ -51,41 +51,41 @@ export default class ReactNativeStartupTiming {
+    * Start time of the RN app startup process. This is provided by the platform by implementing the `ReactMarker.setAppStartTime` API in the native platform code.
+    */
+   get startTime(): ?number {
+-    return this.#startTime;
++    return this._startTime;
+   }
+ 
+   /**
+    * End time of the RN app startup process. This is equal to `executeJavaScriptBundleEntryPointEnd`.
+    */
+   get endTime(): ?number {
+-    return this.#endTime;
++    return this._endTime;
+   }
+ 
+   /**
+    * Start time when RN runtime get initialized. This is when RN infra first kicks in app startup process.
+    */
+   get initializeRuntimeStart(): ?number {
+-    return this.#initializeRuntimeStart;
++    return this._initializeRuntimeStart;
+   }
+ 
+   /**
+    * End time when RN runtime get initialized. This is the last marker before ends of the app startup process.
+    */
+   get initializeRuntimeEnd(): ?number {
+-    return this.#initializeRuntimeEnd;
++    return this._initializeRuntimeEnd;
+   }
+ 
+   /**
+    * Start time of JS bundle being executed. This indicates the RN JS bundle is loaded and start to be evaluated.
+    */
+   get executeJavaScriptBundleEntryPointStart(): ?number {
+-    return this.#executeJavaScriptBundleEntryPointStart;
++    return this._executeJavaScriptBundleEntryPointStart;
+   }
+ 
+   /**
+    * End time of JS bundle being executed. This indicates all the synchronous entry point jobs are finished.
+    */
+   get executeJavaScriptBundleEntryPointEnd(): ?number {
+-    return this.#executeJavaScriptBundleEntryPointEnd;
++    return this._executeJavaScriptBundleEntryPointEnd;
+   }
+ }
+diff --git a/src/private/webapis/performance/UserTiming.js b/src/private/webapis/performance/UserTiming.js
+index f3d7865a5cdce633ee326b1784c3217b9695f757..0920fe8b455389352a981e2d8214c0c92c50e92a 100644
+--- a/src/private/webapis/performance/UserTiming.js
++++ b/src/private/webapis/performance/UserTiming.js
+@@ -47,7 +47,7 @@ export class PerformanceMark extends PerformanceEntry {
+ }
+ 
+ export class PerformanceMeasure extends PerformanceEntry {
+-  #detail: DetailType;
++  _detail: DetailType;
+ 
+   constructor(measureName: string, measureOptions?: PerformanceMeasureInit) {
+     super({
+@@ -58,11 +58,11 @@ export class PerformanceMeasure extends PerformanceEntry {
+     });
+ 
+     if (measureOptions) {
+-      this.#detail = measureOptions.detail;
++      this._detail = measureOptions.detail;
+     }
+   }
+ 
+   get detail(): DetailType {
+-    return this.#detail;
++    return this._detail;
+   }
+ }
