@@ -20,6 +20,9 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Enable Corepack
+        run: corepack enable
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
