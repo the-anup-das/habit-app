@@ -3,6 +3,7 @@
     "name": "Chapter",
     "slug": "chapter",
     "version": "1.0.0",
+    "jsEngine": "hermes",
     "scheme": "chapter",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
