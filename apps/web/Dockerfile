@@ -6,8 +6,9 @@ WORKDIR /app
 # Enable corepack for pnpm
 RUN corepack enable
 
-# Copy root config files
+# Copy root config files and patches
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml turbo.json tsconfig.base.json ./
+COPY patches ./patches
 
 # Copy packages and apps
 COPY packages ./packages

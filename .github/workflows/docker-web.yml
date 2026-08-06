@@ -7,7 +7,8 @@ on:
     paths:
       - 'apps/web/**'
       - 'packages/**'
-      - 'Dockerfile'
+      - 'patches/**'
+      - 'apps/web/Dockerfile'
       - '.github/workflows/docker-web.yml'
   workflow_dispatch:
 
