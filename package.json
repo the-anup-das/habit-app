@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "description": "A private mood journal and habit tracker. Android and web, local-first.",
-  "license": "GPL-3.0-or-later",
+  "license": "MIT",
   "packageManager": "pnpm@11.20.0",
   "engines": {
     "node": ">=22"
