@@ -1,9 +1,9 @@
-import { getToday } from "@chapter/core";
 import { GoalsRepository, SyncQueue, TaxonomyRepository } from "@chapter/db";
 import { openNativeDatabase } from "@chapter/db/drivers/native";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { getToday } from "../../src/lib/clock";
 
 const syncQueue = new SyncQueue();
 

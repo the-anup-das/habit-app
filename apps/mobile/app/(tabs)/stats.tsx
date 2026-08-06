@@ -5,7 +5,6 @@ import {
   calculateInfluenceOnMood,
   calculateMoodCount,
   generateMoodChartGeometry,
-  getLocalDate,
   type PopulatedEntry,
 } from "@chapter/core";
 import { EntriesRepository } from "@chapter/db";
@@ -15,6 +14,7 @@ import { Link, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { Dimensions, ScrollView, StyleSheet, Text, View } from "react-native";
 import Svg, { Circle, Path } from "react-native-svg";
+import { getToday } from "../../src/lib/clock";
 
 export default function StatsOverview() {
   const [loading, setLoading] = useState(true);
@@ -38,7 +38,7 @@ export default function StatsOverview() {
 
     const entries = await entriesRepo.getEntriesForPeriod();
     const popEntries = entries as PopulatedEntry[];
-    const todayDate = getLocalDate(new Date().getTimezoneOffset());
+    const todayDate = getToday();
 
     setStreak(calculateEntryStreak(popEntries, todayDate));
     setMoodCounts(calculateMoodCount(popEntries));

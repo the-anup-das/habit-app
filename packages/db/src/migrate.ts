@@ -1,6 +1,7 @@
 import { MIGRATIONS } from "./migrations";
 
 const LEDGER = "__chapter_migrations";
+const migratedRunners = new WeakSet<object>();
 
 export interface MigrationRunner {
   exec(sql: string): Promise<void>;
@@ -14,17 +15,13 @@ export interface MigrationResult {
 
 /**
  * Applies only the statements this database has not seen.
- *
- * Migrations are plain `CREATE TABLE`, so running them twice fails with
- * "table already exists" — which is exactly what a persistent database does on
- * its second boot. The ledger is what makes startup idempotent.
- *
- * Statements are identified by index, so they are append-only: never reorder or
- * edit a released migration, only add. Editing one leaves existing databases on
- * the old shape while fresh ones get the new shape — the worst outcome,
- * because both look fine locally.
+ * Caches completion per runner instance in memory for rapid subsequent calls.
  */
 export async function runMigrations(runner: MigrationRunner): Promise<MigrationResult> {
+  if (typeof runner === "object" && runner !== null && migratedRunners.has(runner as object)) {
+    return { applied: 0, total: MIGRATIONS.length };
+  }
+
   await runner.exec(
     `CREATE TABLE IF NOT EXISTS ${LEDGER} (idx INTEGER PRIMARY KEY, applied_at INTEGER NOT NULL)`,
   );
@@ -41,5 +38,10 @@ export async function runMigrations(runner: MigrationRunner): Promise<MigrationR
     await runner.exec(`INSERT INTO ${LEDGER} (idx, applied_at) VALUES (${i}, ${Date.now()})`);
     count++;
   }
+
+  if (typeof runner === "object" && runner !== null) {
+    migratedRunners.add(runner as object);
+  }
+
   return { applied: count, total: MIGRATIONS.length };
 }

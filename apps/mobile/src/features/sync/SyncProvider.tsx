@@ -6,13 +6,16 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let daemon: SyncDaemon | null = null;
     let interval: any;
+    let initialTimer: any;
 
     async function init() {
       const { db } = await openNativeDatabase();
       daemon = new SyncDaemon(db);
 
-      // Initial sync
-      daemon.sync();
+      // Initial sync after short delay to unblock app startup & initial screen rendering
+      initialTimer = setTimeout(() => {
+        daemon?.sync();
+      }, 2000);
 
       // Sync every 30 seconds
       interval = setInterval(() => {
@@ -23,6 +26,7 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
     init();
 
     return () => {
+      if (initialTimer) clearTimeout(initialTimer);
       if (interval) clearInterval(interval);
     };
   }, []);
